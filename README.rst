@@ -30,7 +30,7 @@ Install it with the command::
 Requirements
 ------------
 
-.. include:: requirements.txt
+.. include:: ./requirements.txt
    :literal:
 
 Compatibility
