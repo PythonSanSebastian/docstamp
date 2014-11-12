@@ -17,7 +17,7 @@ it could be more generic and have many other applications.
 Usage
 -----
 
-Stampy is a generic .SVG template renderer. The CSV header fields must match the ones in the SVG file.::
+DocStamp is a generic .SVG template renderer. The CSV header fields must match the ones in the SVG file.::
 
     docstamp -i registrations.csv -t my_template.svg -f name -f surname -o out_folder -n talk_certificate --idx 10
 
@@ -30,13 +30,12 @@ Install it with the command::
 Requirements
 ------------
 
-| Jinja2
-| gspread
+.. include:: requirements.txt
 
 
 Compatibility
 -------------
-Stampy is compatible with Python 2 and 3.
+DocStamp is compatible with Python 2 and 3.
 
 
 Licence

@@ -6,12 +6,11 @@ from __future__ import print_function
 import os.path as op
 import io
 import sys
-from setuptools import Command, setup, find_packages
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
-from pip.req import parse_requirements
 
 
-#long description
+# long description
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
     sep = kwargs.get('sep', '\n')
@@ -48,7 +47,7 @@ setup_dict = dict(
 
     install_requires=read('requirements.txt'),
 
-    extra_files=['CHANGES.rst', 'LICENSE', 'README.rst'],
+    #extra_files=['CHANGES.rst', 'LICENSE', 'README.rst'],
 
     long_description=read('README.rst', 'CHANGES.rst'),
 
