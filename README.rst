@@ -31,7 +31,7 @@ Requirements
 ------------
 
 .. include:: requirements.txt
-
+   :literal:
 
 Compatibility
 -------------
