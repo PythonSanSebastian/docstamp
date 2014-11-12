@@ -1,8 +1,8 @@
-stampy
+docstamp
 ======
 
-.. image:: https://pypip.in/v/stampy/badge.png
-    :target: https://pypi.python.org/pypi/stampy
+.. image:: https://pypip.in/v/docstamp/badge.png
+    :target: https://pypi.python.org/pypi/docstamp
     :alt: Latest PyPI version
 
 .. image:: ''.png
@@ -19,13 +19,13 @@ Usage
 
 Stampy is a generic .SVG template renderer. The CSV header fields must match the ones in the SVG file.::
 
-    stampy -i registrations.csv -t my_template.svg -f name -f surname -o out_folder -n talk_certificate --idx 10
+    docstamp -i registrations.csv -t my_template.svg -f name -f surname -o out_folder -n talk_certificate --idx 10
 
 Installation
 ------------
 Install it with the command::
 
-    pip install git+https://www.github.com/PythonSanSebastian/stampy.git
+    pip install git+https://www.github.com/PythonSanSebastian/docstamp.git
 
 Requirements
 ------------
@@ -45,7 +45,7 @@ New BSD license
 
 Authors
 -------
-The author of `stampy` is `Alexandre M. Savio @PythonSanSebastian`_.
+The author of `docstamp` is `Alexandre M. Savio @PythonSanSebastian`_.
 
 Contributors:
 

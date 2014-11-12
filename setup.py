@@ -11,7 +11,6 @@ from setuptools.command.test import test as TestCommand
 from pip.req import parse_requirements
 
 
-
 #long description
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
@@ -56,7 +55,7 @@ setup_dict = dict(
     platforms='Linux/MacOSX',
 
     scripts=['scripts/svg_export.py',
-             'scripts/stampy'],
+             'scripts/docstamp'],
 
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
