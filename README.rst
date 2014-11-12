@@ -23,9 +23,14 @@ DocStamp is a generic .SVG template renderer. The CSV header fields must match t
 
 Installation
 ------------
-Install it with the command::
+To install the development version::
 
     pip install git+https://www.github.com/PythonSanSebastian/docstamp.git
+
+To install the latest release::
+
+    pip install docstamp
+
 
 Requirements
 ------------
