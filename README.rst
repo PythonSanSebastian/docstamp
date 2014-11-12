@@ -10,7 +10,7 @@ stampy
    :alt: Latest Travis CI build status
 
 
-Initially it was a conference badge creator based on SVG templates (https://github.com/alexsavio/pydger), but we thought
+Initially it was a conference badge creator based on SVG templates (https://github.com/PythonSanSebastian/pydger), but we thought
 it could be more generic and have many other applications.
 
 
@@ -25,7 +25,7 @@ Installation
 ------------
 Install it with the command::
 
-    pip install git+https://www.github.com/alexsavio/stampy.git
+    pip install git+https://www.github.com/PythonSanSebastian/stampy.git
 
 Requirements
 ------------
@@ -45,7 +45,7 @@ New BSD license
 
 Authors
 -------
-The author of `stampy` is `Alexandre M. Savio @alexsavio`_.
+The author of `stampy` is `Alexandre M. Savio @PythonSanSebastian`_.
 
 Contributors:
 
