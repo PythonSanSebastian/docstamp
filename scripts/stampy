@@ -1,0 +1,184 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import csv
+import json
+import logging
+import argparse
+import math
+import os.path as op
+from jinja2 import Environment, FileSystemLoader
+
+import sys
+if sys.version_info >= (3, 0):
+    from csv import DictReader
+else:
+    from stampy.unicode_csv import UnicodeReader as DictReader
+
+from stampy.template import GenericDocument
+from stampy.model import json_to_dict
+from stampy.config import LOGGING_LVL
+from stampy.data_source import Google_data
+
+
+logging.basicConfig(level=LOGGING_LVL)
+log = logging.getLogger(__name__)
+
+
+def get_items_from_csv(csvfile_path):
+    # CSV to JSON
+    # one JSON object for each item
+    items = {}
+    with open(str(csvfile_path), 'r') as csvfile:
+
+        reader = DictReader(csvfile)
+
+        for idx, row in enumerate(reader):
+            item = json_to_dict(json.dumps(row))
+            if any([item[i] != '' for i in item]):
+                items[idx] = item
+
+        return items, reader.fieldnames
+
+
+def create_argparser():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    #parser.add_argument('-s', '--search', action='store',
+    #                    dest='search',
+    #                    help='''
+    #                    Search condition string in the format: <field_name>=<field_partial_value>.
+    #                    Look at --input argument help for the valid field_names.
+    #                    Put as many of these as you need.
+    #                    ''')
+    parser.add_argument('-i', '--input', action='store', dest='input',
+                        required=True,
+                        help='''Path to participants CSV file.
+                        This file must have the following fields: name, surname,
+                        email, affiliation, participation_type, talk_title,
+                        hashtags.
+                        The talk_title is only needed if you have speakers.
+                        ''')
+    parser.add_argument('-t', '--template', action='store', dest='template',
+                        required=True,
+                        help='''.SVG template file path''')
+    parser.add_argument('-f', '--file_name_fields', action='append',
+                        dest='file_name_fields',
+                        help='''The field or fields that will be used to name
+                        the output files. Otherwise files will be numbered.''')
+    parser.add_argument('-o', '--output', action='store', dest='output',
+                        default='stamped',
+                        help='Output folder path. Default stamped')
+    parser.add_argument('-n', '--name', action='store', dest='basename',
+                        help='''Output files preffix.
+                        Default: Template file name.''')
+    parser.add_argument('-d', '--type', choices=['pdf', 'png', 'svg'],
+                        action='store', dest='file_type', default='pdf',
+                        help='Output file type.')
+    parser.add_argument('--idx', action='append', dest='index', default=[],
+                        help='''Index/es of the CSV file that you want to create
+                        the document from.
+                        Note that the samples numbers start from 0 and the empty
+                        ones do not count.''')
+    parser.add_argument('--dpi', type=int, action='store', dest='dpi',
+                        default=150, help='Output file resolution')
+    parser.add_argument('-g','--google', action='store_true',
+                        help='Fetch data from Google Drive')
+    return parser
+
+
+if __name__ == '__main__':
+
+    parser = create_argparser()
+
+    try:
+        args = parser.parse_args()
+    except argparse.ArgumentError as exc:
+        log.exception('Error parsing arguments.')
+        parser.error(str(exc.message))
+        exit(-1)
+
+    if args.google:
+        input_file = Google_data.getCSV()
+    else:
+        input_file = args.input
+
+    if not op.exists(input_file):
+        log.exception('Could not find file {}'.format(input_file))
+        exit(-1)
+
+    #get args
+    output_dir = args.output
+    file_type = args.file_type
+    template = args.template
+    file_name_fields = args.file_name_fields
+    index = args.index
+    dpi = args.dpi
+    basename = args.basename
+
+    #init set of template contents
+    items, fieldnames = get_items_from_csv(input_file)
+
+    #check if got any item
+    if len(items) == 0:
+        print('Quiting because found 0 items.')
+        exit(-1)
+
+    if not len(file_name_fields):
+        #set the number of zeros that the files will have
+        n_zeros = math.floor(math.log10(len(items))) + 1
+    else:
+        #check that file_name_fields has all valid fields
+        for field_name in file_name_fields:
+            if not field_name in fieldnames:
+                raise ValueError('Field name {} not found in input file '
+                                 ' header.'.format(field_name))
+
+    #filter the items if index
+    if index:
+        myitems = {int(idx):items[int(idx)] for idx in index}
+        items = myitems
+
+    #make output folder
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
+    #create jinja filesystemloader
+    jinja_env = Environment(loader=FileSystemLoader(op.dirname(op.realpath(input_file))))
+
+    #let's stamp them!
+    for idx in items:
+        item = items[idx]
+
+        if not len(file_name_fields):
+            file_name = str(idx).zfill(n_zeros)
+        else:
+            field_values = []
+            try:
+                for field_name in file_name_fields:
+                    field_values.append(item[field_name].replace(' ', ''))
+            except:
+                log.exception('Could not get field {} value from'
+                              ' {}'.format(field_name, item))
+                exit(-1)
+            file_name = '_'.join(field_values)
+
+        try:
+            doc = GenericDocument(jinja_env, template, item)
+        except Exception:
+            log.exception('Error filling document for {}th item'.format(idx))
+            continue
+
+        #set output file path
+        if basename is None:
+            basename = op.basename(template).replace('.svg', '')
+
+        file_name = basename + '_' + file_name
+        file_path = os.path.join(output_dir, file_name + '.' + file_type)
+
+        try:
+            doc.save_as(file_path, file_type, dpi=dpi)
+        except Exception as exc:
+            log.exception('Error creating {} '
+                          'for {}.'.format(file_path, item))
+            exit(-1)
