@@ -9,8 +9,9 @@ stampy
    :target: ''
    :alt: Latest Travis CI build status
 
+
 Initially it was a conference badge creator based on SVG templates (https://github.com/alexsavio/pydger), but we thought
-it could be more generic and have any use.
+it could be more generic and have many other applications.
 
 
 Usage
