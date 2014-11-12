@@ -33,6 +33,10 @@ Requirements
 .. include:: ./requirements.txt
    :literal:
 
+gspread
+Pillow
+jinja2
+
 Compatibility
 -------------
 DocStamp is compatible with Python 2 and 3.
