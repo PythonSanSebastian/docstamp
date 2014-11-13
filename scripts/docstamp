@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import csv
 import json
 import logging
 import argparse
@@ -44,13 +43,13 @@ def get_items_from_csv(csvfile_path):
 
 def create_argparser():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    #parser.add_argument('-s', '--search', action='store',
-    #                    dest='search',
-    #                    help='''
-    #                    Search condition string in the format: <field_name>=<field_partial_value>.
-    #                    Look at --input argument help for the valid field_names.
-    #                    Put as many of these as you need.
-    #                    ''')
+    # parser.add_argument('-s', '--search', action='store',
+    #                     dest='search',
+    #                     help='''
+    #                     Search condition string in the format: <field_name>=<field_partial_value>.
+    #                     Look at --input argument help for the valid field_names.
+    #                     Put as many of these as you need.
+    #                     ''')
     parser.add_argument('-i', '--input', action='store', dest='input',
                         required=True,
                         help='''Path to participants CSV file.
@@ -82,7 +81,7 @@ def create_argparser():
                         ones do not count.''')
     parser.add_argument('--dpi', type=int, action='store', dest='dpi',
                         default=150, help='Output file resolution')
-    parser.add_argument('-g','--google', action='store_true',
+    parser.add_argument('-g', '--google', action='store_true',
                         help='Fetch data from Google Drive')
     return parser
 
@@ -107,7 +106,7 @@ if __name__ == '__main__':
         log.exception('Could not find file {}'.format(input_file))
         exit(-1)
 
-    #get args
+    # get args
     output_dir = args.output
     file_type = args.file_type
     template = args.template
@@ -116,37 +115,37 @@ if __name__ == '__main__':
     dpi = args.dpi
     basename = args.basename
 
-    #init set of template contents
+    # init set of template contents
     items, fieldnames = get_items_from_csv(input_file)
 
-    #check if got any item
+    # check if got any item
     if len(items) == 0:
         print('Quiting because found 0 items.')
         exit(-1)
 
     if not len(file_name_fields):
-        #set the number of zeros that the files will have
+        # set the number of zeros that the files will have
         n_zeros = math.floor(math.log10(len(items))) + 1
     else:
-        #check that file_name_fields has all valid fields
+        # check that file_name_fields has all valid fields
         for field_name in file_name_fields:
-            if not field_name in fieldnames:
+            if field_name not in fieldnames:
                 raise ValueError('Field name {} not found in input file '
                                  ' header.'.format(field_name))
 
-    #filter the items if index
+    # filter the items if index
     if index:
-        myitems = {int(idx):items[int(idx)] for idx in index}
+        myitems = {int(idx): items[int(idx)] for idx in index}
         items = myitems
 
-    #make output folder
+    # make output folder
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    #create jinja filesystemloader
+    # create jinja filesystemloader
     jinja_env = Environment(loader=FileSystemLoader(op.dirname(op.realpath(input_file))))
 
-    #let's stamp them!
+    # let's stamp them!
     for idx in items:
         item = items[idx]
 
@@ -169,7 +168,7 @@ if __name__ == '__main__':
             log.exception('Error filling document for {}th item'.format(idx))
             continue
 
-        #set output file path
+        # set output file path
         if basename is None:
             basename = op.basename(template).replace('.svg', '')
 

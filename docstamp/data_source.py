@@ -3,10 +3,15 @@ import getpass
 import gspread
 from .unicode_csv import UnicodeWriter
 
+
 class Google_data:
 
     def getCSV(self):
-        #returns filename
+        """
+        Returns
+        -------
+        filename: str
+        """
         user = raw_input("insert google username:")
         password = getpass.getpass(prompt="insert password:")
         name = raw_input("spreadsheet name:")
@@ -25,4 +30,5 @@ class Google_data:
         with open(filename, 'wb') as f:
             writer = UnicodeWriter(f)
             writer.writerows(ws.get_all_values())
-        return(f)
+
+        return(filename)

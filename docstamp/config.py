@@ -2,7 +2,7 @@
 
 import os
 import logging
-from jinja2 import Environment, FileSystemLoader #, PackageLoader
+from jinja2 import Environment, FileSystemLoader
 
 LOGGING_LVL = logging.INFO
 logging.basicConfig(level=LOGGING_LVL)
@@ -34,9 +34,9 @@ LYX_BINPATH = which('lyx')
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              'templates')
 
-#JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
+# JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
 JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
-#FILE_EXPORTERS = {'.svg': Inkscape,}
-#                  '.tex': PdfLatex,
-#                  '.lyx': LyX}
+# FILE_EXPORTERS = {'.svg': Inkscape,}
+#                   '.tex': PdfLatex,
+#                   '.lyx': LyX}

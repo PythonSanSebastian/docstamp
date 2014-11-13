@@ -5,20 +5,18 @@ Install the packages you have listed in the requirements file you input as
 first argument.
 """
 
-from __future__ import (absolute_import, division, print_function, 
+from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-from fabric.api import task, local, cd
+from fabric.api import task, local
 
-import sys
 import os
 import os.path as op
-import fileinput
 import subprocess
 import shutil
 
 from glob import glob
-from setuptools import Command, setup, find_packages
+from setuptools import find_packages
 from pip.req import parse_requirements
 
 # Get version without importing, which avoids dependency issues
@@ -26,12 +24,12 @@ module_name = find_packages(exclude=['tests'])[0]
 version_pyfile = op.join(module_name, 'version.py')
 exec(compile(open(version_pyfile).read(), version_pyfile, 'exec'))
 
-#get current dir
+# get current dir
 CWD = op.realpath(op.curdir)
 
 
 def get_requirements(*args):
-    """Parse all requirements files given and return a list of the 
+    """Parse all requirements files given and return a list of the
        dependencies"""
     install_deps = []
     try:
@@ -76,7 +74,7 @@ def recursive_rmtrees(work_dir=CWD, regex='*'):
 
 @task
 def install_deps():
-    #for line in fileinput.input():
+    # for line in fileinput.input():
     req_filepaths = ['requirements.txt']
 
     deps = get_requirements(*req_filepaths)
@@ -168,8 +166,10 @@ def docs(doc_type='html'):
 @task
 def release():
     clean()
+    local('pip install -U pip setuptools twine wheel')
     local('python setup.py sdist upload')
-    local('python setup.py bdist_wheel upload')
+    # local('python setup.py bdist_wheel upload')
+    local('twine upload dist/*')
 
 
 @task
