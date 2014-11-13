@@ -14,12 +14,12 @@ import sys
 if sys.version_info >= (3, 0):
     from csv import DictReader
 else:
-    from stampy.unicode_csv import UnicodeReader as DictReader
+    from docstamp.unicode_csv import UnicodeReader as DictReader
 
-from stampy.template import GenericDocument
-from stampy.model import json_to_dict
-from stampy.config import LOGGING_LVL
-from stampy.data_source import Google_data
+from docstamp.template import GenericDocument
+from docstamp.model import json_to_dict
+from docstamp.config import LOGGING_LVL
+from docstamp.data_source import Google_data
 
 
 logging.basicConfig(level=LOGGING_LVL)

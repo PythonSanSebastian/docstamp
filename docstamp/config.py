@@ -34,7 +34,7 @@ LYX_BINPATH = which('lyx')
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              'templates')
 
-#JINJA_ENV = Environment(loader=PackageLoader('stampy', 'templates'))
+#JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
 JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
 #FILE_EXPORTERS = {'.svg': Inkscape,}

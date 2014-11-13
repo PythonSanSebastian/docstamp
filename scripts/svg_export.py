@@ -7,7 +7,7 @@ import json
 import logging
 import argparse
 
-from stampy.inkscape import svg2pdf, svg2png
+from docstamp.inkscape import svg2pdf, svg2png
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
