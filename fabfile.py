@@ -167,8 +167,8 @@ def docs(doc_type='html'):
 def release():
     clean()
     local('pip install -U pip setuptools twine wheel')
-    local('python setup.py sdist upload')
-    # local('python setup.py bdist_wheel upload')
+    local('python setup.py sdist bdist_wheel')
+    #local('python setup.py bdist_wheel upload')
     local('twine upload dist/*')
 
 
