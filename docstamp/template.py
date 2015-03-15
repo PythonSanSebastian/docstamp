@@ -1,64 +1,192 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+# -------------------------------------------------------------------------------
+# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
+# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
+# Universidad del Pais Vasco UPV/EHU
+#
+# 2015, Alexandre Manhaes Savio
+# Use this at your own risk!
+# -------------------------------------------------------------------------------
 
+
+import os.path as op
 import shutil
 import logging
-import tempfile
+from   jinja2 import Environment, FileSystemLoader
 
-from .config import JINJA_ENV
-from .inkscape import svg2pdf, svg2png
+from .inkscape import  svg2pdf, svg2png
+from .pdflatex import  tex2pdf
+from .filenames import get_tempfile
+
 
 log = logging.getLogger(__name__)
 
 
-class Document(object):
+def get_environment_for(file_path):
+    """Return a Jinja2 environment for where file_path is.
 
-    TEMPLATE_FILE = 'badge_template.svg'
+    Parameters
+    ----------
+    file_path: str
 
-    def __init__(self, template_file_path=None):
-        if template_file_path is None:
-            template_file_path = self.TEMPLATE_FILE
+    Returns
+    -------
+    jinja_env: Jinja2.Environment
 
-        self.template = JINJA_ENV.get_template(template_file_path)
-        self.file_content_ = None
+    """
+    work_dir = op.dirname(op.abspath(file_path))
 
-    def fill(self):
-        raise NotImplementedError
+    if not op.exists(work_dir):
+        raise IOError('Could not find folder for dirname of file {}.'.format(file_path))
 
-    def save_as_svg(self, file_path):
+    try:
+        jinja_env = Environment(loader=FileSystemLoader(work_dir))
+    except:
+        raise
+    else:
+        return jinja_env
+
+
+class TextDocument(object):
+    """ A plain text document model.
+
+    Parameters
+    ----------
+    template_file_path: str
+        Document template file path.
+
+    doc_contents: dict
+        Dictionary with content values for the template to be filled.
+    """
+    def __init__(self, template_file_path, doc_contents=None):
+        if not op.exists(template_file_path):
+            raise IOError('Could not find template file {}.'.format(template_file_path))
+
+        self._setup_template_file(template_file_path)
+
+        if doc_contents is not None:
+            self.file_content_ = self.fill(doc_contents)
+
+    def _setup_template_file(self, template_file_path):
+        """ Setup self.template
+
+        Parameters
+        ----------
+        template_file_path: str
+            Document template file path.
         """
-        :param file_path:
-        :return:
+        try:
+            template_file = template_file_path
+            template_env  = get_environment_for(template_file_path)
+            template      = template_env.get_template(template_file)
+        except:
+            raise
+        else:
+            self._template_file = template_file
+            self._template_env  = template_env
+            self.template       = template
+
+    def fill(self, doc_contents):
+        """ Fill the content of the document with the information in doc_contents.
+
+        Parameters
+        ----------
+        doc_contents: dict
+            Set of values to set the template document.
+
+        Returns
+        -------
+        filled_doc: str
+            The content of the document with the template information filled.
+        """
+        try:
+            filled_doc = self.template.render(**doc_contents)
+        except:
+            log.exception('Error rendering Document '
+                          'for {}.'.format(doc_contents))
+            raise
+        else:
+            self.file_content_ = filled_doc
+            return filled_doc
+
+    def save_content(self, file_path):
+        """ Save the content of the .txt file in a text file.
+
+        Parameters
+        ----------
+        file_path: str
+            Path to the output file.
         """
         if self.file_content_ is None:
-            msg = 'Template content has not been updated.'
+            msg = 'Template content has not been updated. Please fill the template before rendering it.'
             log.exception(msg)
             raise ValueError(msg)
 
         try:
             with open(file_path, "w") as f:
                 f.write(self.file_content_)#.encode('utf8'))
-        except Exception as exc:
-            log.exception('Error saving {} '
-                          'file in {}'.format(str(self.__class__), file_path))
+        except:
+            log.exception('Error saving {} file in {}'.format(str(self.__class__), file_path))
             raise
 
-    def save_as(self, file_path, file_type, dpi=150):
-        """Save document in file_path
+    def render(self, file_path):
+        """ See self.save_content """
+        return self.save_content(file_path)
+
+    @classmethod
+    def from_template_file(self, template_file_path):
+        """ Create
+
+        Parameters
+        ----------
+        template_file_path: str
+
+        Returns
+        -------
+        doc
+
+        """
+        # get template file extension
+        ext = op.basename(template_file_path).split('.')[-1]
+        if 'txt' in ext:
+            doc_type = TextDocument
+        elif 'svg' in ext:
+            doc_type = SVGDocument
+        elif 'tex' in ext:
+            doc_type = LateXDocument
+        else:
+            raise ValueError('Could not identify the document type for file {}.'.format(template_file_path))
+
+        return doc_type(template_file_path)
+
+
+class SVGDocument(TextDocument):
+    """ A .svg template document model. See GenericDocument. """
+    _template_file = 'badge_template.svg'
+
+    def render(self, file_path, **kwargs):
+        """ Save the content of the .svg file in the chosen rendered format.
 
         Parameters
         ----------
         file_path: str
+            Path to the output file.
 
+        Kwargs
+        ------
         file_type: str
             Choices: 'png', 'pdf', 'svg'
+            Default: 'pdf'
 
         dpi: int
-
-        Returns
-        -------
+            Dots-per-inch for the png and pdf.
+            Default: 150
         """
-        temp = tempfile.NamedTemporaryFile(suffix='.svg')
-        self.save_as_svg(temp.name)
+        temp = get_tempfile(suffix='.svg')
+        self.save_content(temp.name)
+
+        file_type = kwargs.get('file_type', 'pdf')
+        dpi       = kwargs.get('dpi',       150)
 
         try:
             if file_type == 'svg':
@@ -67,25 +195,29 @@ class Document(object):
                 svg2png(temp.name, file_path, dpi=dpi)
             elif file_type == 'pdf':
                 svg2pdf(temp.name, file_path, dpi=dpi)
-        except Exception as exc:
-            log.exception('Error exporting file {} to {}'.format(file_path,
-                                                                 file_type))
+        except:
+            log.exception('Error exporting file {} to {}'.format(file_path, file_type))
             raise
 
 
-class GenericDocument(Document):
+class LateXDocument(TextDocument):
+    """ A .tex template document model. See GenericDocument. """
 
-    def __init__(self, jinja_env, template_file_path, doc_contents):
-        self.template = jinja_env.get_template(template_file_path)
-        self.file_content_ = self.fill(doc_contents)
+    def render(self, file_path, **kwargs):
+        """ Save the content of the .text file in the PDF.
 
-    def fill(self, doc_contents):
+        Parameters
+        ----------
+        file_path: str
+            Path to the output file.
+        """
+        temp = get_tempfile(suffix='.tex')
+        self.save_content(temp.name)
+
         try:
-            filled = self.template.render(**doc_contents)
-            return filled
-        except Exception as exc:
-            log.exception('Error rendering Document '
-                          'for {}.'.format(doc_contents))
+            tex2pdf(temp.name, file_path, output_format='pdf')
+        except:
+            log.exception('Error exporting file {} to PDF.'.format(file_path))
             raise
 
 
