@@ -1,41 +1,182 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+# -------------------------------------------------------------------------------
+# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
+# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
+# Universidad del Pais Vasco UPV/EHU
+#
+# 2015, Alexandre Manhaes Savio
+# Use this at your own risk!
+# -------------------------------------------------------------------------------
 
 import os
+import re
 import logging
-from jinja2 import Environment, FileSystemLoader
+import os.path as op
+
+from   sys    import platform as _platform
 
 LOGGING_LVL = logging.INFO
 logging.basicConfig(level=LOGGING_LVL)
 
 
+def find_file_match(folder_path, regex=''):
+    """
+    Returns absolute paths of files that match the regex within folder_path and
+    all its children folders.
+
+    Note: The regex matching is done using the match function
+    of the re module.
+
+    Parameters
+    ----------
+    folder_path: string
+
+    regex: string
+
+    Returns
+    -------
+    A list of strings.
+
+    """
+    outlist = []
+    for root, dirs, files in os.walk(folder_path):
+        outlist.extend([op.join(root, f) for f in files
+                        if re.match(regex, f)])
+
+    return outlist
+
+
+def is_exe(fpath):
+    """Return True if fpath is an executable file path.
+
+    Parameters
+    ----------
+    fpath: str
+        File path
+
+    Returns
+    -------
+    is_executable: bool
+    """
+    return op.isfile(fpath) and os.access(fpath, os.X_OK)
+
+
 def which(program):
-    import os
-
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
+    """
+    :param program:
+    :return:
+    """
+    fpath, fname = op.split(program)
     if fpath:
         if is_exe(program):
             return program
     else:
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
-            exe_file = os.path.join(path, program)
+            exe_file = op.join(path, program)
             if is_exe(exe_file):
                 return exe_file
 
     return None
 
 
-INKSCAPE_BINPATH = which('inkscape')
-LYX_BINPATH = which('lyx')
+def get_system_path():
+    if _platform == "linux" or _platform == "linux2":
+        return os.environ['PATH']
+    elif _platform == "darwin":
+        return os.environ['PATH']
+    elif _platform == "win32":
+        # don't know if this works
+        return os.environ['PATH']
 
-TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             'templates')
+
+def get_other_program_folders():
+    if _platform == "linux" or _platform == "linux2":
+        return ['/opt/bin']
+    elif _platform == "darwin":
+        return ['/Applications', op.join(os.environ['HOME'], 'Applications')]
+    elif _platform == "win32":
+        # don't know if this works
+        return ['C:\Program Files']
+
+
+def get_temp_dir():
+    if _platform == "linux" or _platform == "linux2":
+        return None
+    elif _platform == "darwin":
+        return '.'
+    elif _platform == "win32":
+        # don't know if this works
+        return None
+
+
+def find_in_other_programs_folders(app_name):
+    app_name_regex = '^' + app_name + '$'
+    other_folders  = get_other_program_folders()
+
+    for folder in other_folders:
+        abin_file = find_program(folder, app_name_regex)
+        if abin_file is not None:
+            return abin_file
+
+    return None
+
+
+def find_program(root_dir, exec_name):
+    file_matches = find_file_match(root_dir, exec_name)
+    for f in file_matches:
+        if is_exe(f):
+            return f
+    return None
+
+
+def ask_for_path_of(app_name):
+    bin_path = None
+    while bin_path is not None:
+        bin_path = input('Insert path of {} executable file [Press Ctrl+C to exit]: '.format(app_name))
+
+        if not op.exists(bin_path):
+            print('Could not find file {}. Try it again.'.format(bin_path))
+            bin_path = None
+            continue
+
+        if not is_exe(bin_path):
+            print('No execution permissions on file {}. Try again.'.format(bin_path))
+            bin_path = None
+            continue
+
+        return bin_path
+
+
+def proactive_search_of(app_name):
+    if _platform == 'win32':
+        bin_name = app_name + '.exe'
+    else:
+        bin_name = app_name
+
+    bin_path = which(app_name)
+    if bin_path is not None and is_exe(bin_path):
+        return bin_path
+
+    bin_path = find_in_other_programs_folders(bin_name)
+    if bin_path is not None:
+        return bin_path
+
+    return ask_for_path_of(bin_name)
+
+
+def get_inkscape_binpath():
+    return proactive_search_of('inkscape')
+
+
+def get_lyx_binpath():
+    return proactive_search_of('lyx')
+
+
+#TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
 # JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
-JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
+#JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
 # FILE_EXPORTERS = {'.svg': Inkscape,}
 #                   '.tex': PdfLatex,

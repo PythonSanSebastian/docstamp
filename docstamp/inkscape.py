@@ -1,13 +1,18 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+# -------------------------------------------------------------------------------
+# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
+# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
+# Universidad del Pais Vasco UPV/EHU
+#
+# 2015, Alexandre Manhaes Savio
+# Use this at your own risk!
+# -------------------------------------------------------------------------------
 
-import os
-import os.path as op
+import os.path      as op
 import logging
-import subprocess
-from subprocess import CalledProcessError
 
-from .config import INKSCAPE_BINPATH
-
+from   .config      import get_inkscape_binpath
+from   .commands    import call_command
 
 log = logging.getLogger(__name__)
 
@@ -20,26 +25,30 @@ class FileExporter(object):
         raise NotImplementedError
 
 
-#class Inkscape(FileExporter):
-#    def export(input_filepath, output_filepath, args_string, **kwargs):
-#TODO?
+def call_inkscape(args_strings, inkscape_binpath=None):
+    """Call inkscape CLI with arguments and returns its return value.
 
+    Parameters
+    ----------
+    args_string: list of str
 
-def call_inkscape(args_string):
-    """Call inkscape CLI with arguments and returns its return value
+    inkscape_binpath: str
+
+    Returns
+    -------
+    return_value
+        Inkscape command CLI call return value.
     """
-    if INKSCAPE_BINPATH is None or not op.exists(INKSCAPE_BINPATH):
+    log.debug('Looking for the binary file for inkscape.')
+
+    if inkscape_binpath is None:
+        inkscape_binpath = get_inkscape_binpath()
+
+    if inkscape_binpath is None or not op.exists(inkscape_binpath):
         raise IOError('Inkscape binary has not been found. Please check '
                       'configuration.')
 
-    try:
-        ret = subprocess.check_call([INKSCAPE_BINPATH] + args_string)
-        return ret
-    except CalledProcessError as ce:
-        log.exception("Error calling inkscape with arguments: "
-                      "{} \n With return code: {}".format(args_string,
-                                                          ce.returncode))
-        raise
+    return call_command(inkscape_binpath, args_strings)
 
 
 def inkscape_export(input_file, output_file, export_flag="-A", dpi=90):
@@ -58,6 +67,11 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90):
     export_flag: str
         Inkscape CLI flag to indicate the type of the output file
 
+    Returns
+    -------
+    return_value
+        Command call return value
+
     """
     if not op.exists(input_file):
         log.error('File {} not found.'.format(input_file))
@@ -66,24 +80,18 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90):
     if not '=' in export_flag:
         export_flag += ' '
 
-    try:
-        ret = call_inkscape("{}{} --export-dpi={} {}".format(export_flag,
-                                                             output_file, dpi,
-                                                             input_file).split())
-    except CalledProcessError as ce:
-        log.exception("Error converting file {} to PDF.".format(input_file))
-        raise
+    arg_strings = "{}{} --export-dpi={} {}".format(export_flag, output_file, dpi, input_file)
+
+    return call_inkscape(arg_strings.split())
 
 
 def svg2pdf(svg_file_path, pdf_file_path, dpi=150):
     """ Transform SVG file to PDF file
     """
-    return inkscape_export(svg_file_path, pdf_file_path, export_flag="-A",
-                           dpi=dpi)
+    return inkscape_export(svg_file_path, pdf_file_path, export_flag="-A", dpi=dpi)
 
 
 def svg2png(svg_file_path, png_file_path, dpi=150):
     """ Transform SVG file to PNG file
     """
-    return inkscape_export(svg_file_path, png_file_path, export_flag="-e",
-                           dpi=dpi)
+    return inkscape_export(svg_file_path, png_file_path, export_flag="-e", dpi=dpi)
