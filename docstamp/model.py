@@ -1,4 +1,13 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+# -------------------------------------------------------------------------------
+# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
+# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
+# Universidad del Pais Vasco UPV/EHU
+#
+# 2015, Alexandre Manhaes Savio
+# Use this at your own risk!
+# -------------------------------------------------------------------------------
+
 
 import json
 
