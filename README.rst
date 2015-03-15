@@ -13,11 +13,15 @@ docstamp
 Initially it was a conference badge creator based on SVG templates (https://github.com/PythonSanSebastian/pydger), but we thought
 it could be more generic and have many other applications.
 
+DocStamp is a generic template renderer which takes the data from a .CSV file or a Google Spreadsheet and creates
+one rendered template file for each row of the data.
+
+It needs Inkscape for .SVG templates.
 
 Usage
 -----
 
-DocStamp is a generic .SVG template renderer. The CSV header fields must match the ones in the SVG file.::
+The CSV header fields must match the ones in the SVG file.::
 
     docstamp -i registrations.csv -t my_template.svg -f name -f surname -o out_folder -n talk_certificate --idx 10
 
@@ -44,7 +48,7 @@ jinja2
 
 Compatibility
 -------------
-DocStamp is compatible with Python 2 and 3.
+DocStamp is compatible with Python 2 and 3. I could not test it on Windows.
 
 
 Licence
@@ -53,10 +57,11 @@ New BSD license
 
 Authors
 -------
-The author of `docstamp` is `Alexandre M. Savio @PythonSanSebastian`_.
+The author of `docstamp` is `Alexandre M. Savio @alexsavio`_.
 
 Contributors:
 
 Oier Etxaniz @oechaniz
 
 Luis Javier Salvatierra @ljsalvatierra
+
