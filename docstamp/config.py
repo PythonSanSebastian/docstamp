@@ -11,9 +11,10 @@
 import os
 import re
 import logging
-import os.path as op
+import os.path      as op
+from   sys          import platform as _platform
 
-from   sys    import platform as _platform
+from   .commands    import which, is_exe
 
 LOGGING_LVL = logging.INFO
 logging.basicConfig(level=LOGGING_LVL)
@@ -44,41 +45,6 @@ def find_file_match(folder_path, regex=''):
                         if re.match(regex, f)])
 
     return outlist
-
-
-def is_exe(fpath):
-    """Return True if fpath is an executable file path.
-
-    Parameters
-    ----------
-    fpath: str
-        File path
-
-    Returns
-    -------
-    is_executable: bool
-    """
-    return op.isfile(fpath) and os.access(fpath, os.X_OK)
-
-
-def which(program):
-    """
-    :param program:
-    :return:
-    """
-    fpath, fname = op.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = op.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
-
 
 def get_system_path():
     if _platform == "linux" or _platform == "linux2":
