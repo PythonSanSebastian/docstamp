@@ -19,6 +19,22 @@ import logging
 log = logging.getLogger(__name__)
 
 
+
+def is_exe(fpath):
+    """Return True if fpath is an executable file path.
+
+    Parameters
+    ----------
+    fpath: str
+        File path
+
+    Returns
+    -------
+    is_executable: bool
+    """
+    return op.isfile(fpath) and os.access(fpath, os.X_OK)
+
+
 def which(program):
     """Returns the absolute path of the given CLI program name."""
     if (sys.version_info > (3, 0)):
@@ -33,9 +49,6 @@ def which_py3(program):
 
 
 def which_py2(program):
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
     fpath, fname = os.path.split(program)
     if fpath:
         if is_exe(program):
