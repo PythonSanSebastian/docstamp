@@ -80,9 +80,12 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90):
     if not '=' in export_flag:
         export_flag += ' '
 
-    arg_strings = "{}{} --export-dpi={} {}".format(export_flag, output_file, dpi, input_file)
+    arg_strings  = []
+    arg_strings += ['{}{}'.format(export_flag, output_file)]
+    arg_strings += ['--export-dpi={}'.format(dpi)]
+    arg_strings += [input_file]
 
-    return call_inkscape(arg_strings.split())
+    return call_inkscape(arg_strings)
 
 
 def svg2pdf(svg_file_path, pdf_file_path, dpi=150):
