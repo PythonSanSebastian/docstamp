@@ -8,11 +8,13 @@
 # Use this at your own risk!
 # -------------------------------------------------------------------------------
 
+import os
+import os.path  as op
 import tempfile
-import os.path      as op
 import logging
+from   glob     import glob
 
-from   .config import get_temp_dir
+from   .config  import get_temp_dir
 
 
 log = logging.getLogger(__name__)
@@ -92,12 +94,38 @@ def remove_ext(filepath):
     return filepath[:filepath.rindex(get_extension(filepath))]
 
 
-def get_tempfile(suffix='.txt'):
-    """
+def get_tempfile(suffix='.txt', dirpath=None):
+    """ Return a temporary file with the given suffix within dirpath.
+    If dirpath is None, will look for a temporary folder in your system.
+
     Parameters
     ----------
+    suffix: str
+        Temporary file name suffix
+
+    dirpath: str
+        Folder path where create the temporary file
 
     Returns
     -------
+    temp_filepath: str
+        The path to the temporary path
     """
-    return tempfile.NamedTemporaryFile(suffix=suffix, dir=get_temp_dir())
+    if dirpath is None:
+        dirpath = get_temp_dir()
+
+    return tempfile.NamedTemporaryFile(suffix=suffix, dir=dirpath)
+
+
+def cleanup(workdir, extension):
+    """ Remove the files in workdir that have the given extension.
+
+    Parameters
+    ----------
+    workdir:
+        Folder path from where to clean the files.
+
+    extension: str
+        File extension without the dot, e.g., 'txt'
+    """
+    [os.remove(f) for f in glob(op.join(workdir, '*.' + extension))]
