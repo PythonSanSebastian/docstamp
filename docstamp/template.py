@@ -15,7 +15,7 @@ import logging
 from   jinja2 import Environment, FileSystemLoader
 
 from .inkscape import  svg2pdf, svg2png
-from .pdflatex import  tex2pdf
+from .pdflatex import  tex2pdf, xetex2pdf
 from .filenames import get_tempfile
 
 
@@ -45,6 +45,34 @@ def get_environment_for(file_path):
         raise
     else:
         return jinja_env
+
+
+def get_doctype_by_extension(extension):
+    if 'txt' in extension:
+        doc_type = TextDocument
+    elif 'svg' in extension:
+        doc_type = SVGDocument
+    elif 'tex' in extension:
+        doc_type = LateXDocument
+    else:
+        raise ValueError('Could not identify the `doc_type` for `extension` {}.'.format(extension))
+
+    return doc_type
+
+
+def get_doctype_by_command(command):
+    if not command:
+        doc_type = TextDocument
+    elif command == 'inkscape':
+        doc_type = SVGDocument
+    elif command == 'pdflatex':
+        doc_type = PDFLateXDocument
+    elif command == 'xelatex':
+        doc_type = XeLateXDocument
+    else:
+        raise ValueError('Could not identify the `doc_type` for `command` {}.'.format(command))
+
+    return doc_type
 
 
 class TextDocument(object):
@@ -134,7 +162,7 @@ class TextDocument(object):
         return self.save_content(file_path)
 
     @classmethod
-    def from_template_file(self, template_file_path):
+    def from_template_file(self, template_file_path, command=None):
         """ Create
 
         Parameters
@@ -148,16 +176,15 @@ class TextDocument(object):
         """
         # get template file extension
         ext = op.basename(template_file_path).split('.')[-1]
-        if 'txt' in ext:
-            doc_type = TextDocument
-        elif 'svg' in ext:
-            doc_type = SVGDocument
-        elif 'tex' in ext:
-            doc_type = LateXDocument
-        else:
-            raise ValueError('Could not identify the document type for file {}.'.format(template_file_path))
 
-        return doc_type(template_file_path)
+        try:
+            doc_type = get_doctype_by_command(command)
+        except ValueError:
+            doc_type = get_doctype_by_extension(ext)
+        except:
+            raise
+        else:
+            return doc_type(template_file_path)
 
 
 class SVGDocument(TextDocument):
@@ -189,19 +216,22 @@ class SVGDocument(TextDocument):
         dpi       = kwargs.get('dpi',       150)
 
         try:
-            if file_type == 'svg':
+            if   file_type == 'svg':
                 shutil.copyfile(temp.name, file_path)
-            if file_type == 'png':
+            elif file_type == 'png':
                 svg2png(temp.name, file_path, dpi=dpi)
             elif file_type == 'pdf':
                 svg2pdf(temp.name, file_path, dpi=dpi)
         except:
-            log.exception('Error exporting file {} to {}'.format(file_path, file_type))
+            log.exception('Error exporting file {} to {}'.format(file_path,
+                                                                 file_type))
             raise
 
 
 class LateXDocument(TextDocument):
     """ A .tex template document model. See GenericDocument. """
+
+    _render_function = staticmethod(tex2pdf)
 
     def render(self, file_path, **kwargs):
         """ Save the content of the .text file in the PDF.
@@ -215,11 +245,15 @@ class LateXDocument(TextDocument):
         self.save_content(temp.name)
 
         try:
-            tex2pdf(temp.name, file_path, output_format='pdf')
+            self._render_function(temp.name, file_path, output_format='pdf')
         except:
             log.exception('Error exporting file {} to PDF.'.format(file_path))
             raise
 
 
+class PDFLateXDocument(LateXDocument):
+    pass
 
 
+class XeLateXDocument(LateXDocument):
+    _render_function = staticmethod(xetex2pdf)
