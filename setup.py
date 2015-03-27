@@ -34,7 +34,7 @@ setup_dict = dict(
     version=__version__,
 	url="https://github.com/PythonSanSebastian/{}.git".format(module_name),
 
-    description="A SVG template renderer from table data based on Inkscape and Jinja2.",
+    description="A SVG and LateX template renderer from table data based on Inkscape and Jinja2.",
 
     license=LICENSE,
 
