@@ -22,23 +22,28 @@ if sys.version_info >= (3, 0):
 else:
     from docstamp.unicode_csv import UnicodeReader as DictReader
 
-from  docstamp.template     import TextDocument
-from  docstamp.model        import json_to_dict
-from  docstamp.config       import LOGGING_LVL
+from  docstamp.template import TextDocument
+from  docstamp.model    import json_to_dict
+from  docstamp.config   import LOGGING_LVL
 #from  docstamp.data_source  import Google_data
 
 
 logging.basicConfig(level=LOGGING_LVL)
 log = logging.getLogger(__name__)
 
-ACCEPTED_DOCS = "Inkscape (.svg), PDFLatex (.tex)"
+ACCEPTED_DOCS = "Inkscape (.svg), PDFLatex (.tex), XeLatex (.tex)"
 
 
-def get_items_from_csv(csvfile_path):
+def get_items_from_csv(csv_filepath):
     # CSV to JSON
     # one JSON object for each item
+    if not op.exists(csv_filepath):
+        raise IOError('Could not find file {}.'.format(csv_filepath))
+
+    log.debug('Reading CSV elements from {}.'.format(csv_filepath))
+
     items = {}
-    with open(str(csvfile_path), 'r') as csvfile:
+    with open(str(csv_filepath), 'r') as csvfile:
 
         reader = DictReader(csvfile)
 
@@ -48,6 +53,15 @@ def get_items_from_csv(csvfile_path):
                 items[idx] = item
 
         return items, reader.fieldnames
+
+
+def verbose_switch(verbose=False):
+    if verbose:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    logging.getLogger().setLevel(log_level)
 
 
 def create_argparser():
@@ -61,11 +75,8 @@ def create_argparser():
     #                     ''')
     parser.add_argument('-i', '--input', action='store', dest='input',
                         required=True,
-                        help='''Path to participants CSV file.
-                        This file must have the following fields: name, surname,
-                        email, affiliation, participation_type, talk_title,
-                        hashtags.
-                        The talk_title is only needed if you have speakers.
+                        help='''Path to the CSV file with the data elements to be used to fill the template.
+                        This file must have the same fields as the template file.
                         ''')
     parser.add_argument('-t', '--template', action='store', dest='template',
                         required=True,
@@ -79,11 +90,14 @@ def create_argparser():
                         default='stamped',
                         help='Output folder path. Default stamped')
     parser.add_argument('-n', '--name', action='store', dest='basename',
-                        help='''Output files preffix.
+                        help='''Output files prefix.
                         Default: Template file name.''')
     parser.add_argument('-d', '--type', choices=['pdf', 'png', 'svg'],
                         action='store', dest='file_type', default='pdf',
                         help='Output file type.')
+    parser.add_argument('-c', '--command', choices=['', 'inkscape', 'pdflatex', 'xelatex'],
+                        action='store', dest='command', default='',
+                        help='The rendering command to be used in case file name extension is not specific.')
     parser.add_argument('--idx', action='append', dest='index', default=[],
                         help='''Index/es of the CSV file that you want to create
                         the document from.
@@ -93,6 +107,8 @@ def create_argparser():
                         default=150, help='Output file resolution')
     parser.add_argument('-g', '--google', action='store_true',
                         help='Fetch data from Google Drive')
+    parser.add_argument('-v', '--verbose', action='store_true', dest='verbose',
+                        default=False, help='Output debug logs.')
     return parser
 
 
@@ -124,6 +140,11 @@ if __name__ == '__main__':
     index            = args.index
     dpi              = args.dpi
     basename         = args.basename
+    command          = args.command
+    verbose          = args.verbose
+
+    # setup verbose mode
+    verbose_switch(verbose)
 
     # init set of template contents
     items, fieldnames = get_items_from_csv(input_file)
@@ -147,13 +168,17 @@ if __name__ == '__main__':
     if index:
         myitems = {int(idx): items[int(idx)] for idx in index}
         items   = myitems
+        log.debug('Using the elements with index {} of the input file.'.format(index))
 
     # make output folder
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
     #create template document model
-    template_doc = TextDocument.from_template_file(template)
+    log.debug('Creating the template object using the file {}.'.format(template))
+    template_doc = TextDocument.from_template_file(template, command)
+
+    log.debug('Created an object of type {}.'.format(type(template_doc)))
 
     # let's stamp them!
     for idx in items:
@@ -172,6 +197,7 @@ if __name__ == '__main__':
                 exit(-1)
             file_name = '_'.join(field_values)
 
+        log.debug('Filling template with values of item {}. {}'.format(idx, file_name))
         try:
             template_doc.fill(item)
         except:
@@ -188,6 +214,7 @@ if __name__ == '__main__':
         kwargs = {'file_type': file_type,
                   'dpi':       dpi}
 
+        log.debug('Rendering file {}.'.format(file_path))
         try:
             template_doc.render(file_path, **kwargs)
         except:
