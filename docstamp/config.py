@@ -46,6 +46,7 @@ def find_file_match(folder_path, regex=''):
 
     return outlist
 
+
 def get_system_path():
     if _platform == "linux" or _platform == "linux2":
         return os.environ['PATH']
@@ -68,7 +69,7 @@ def get_other_program_folders():
 
 def get_temp_dir():
     if _platform == "linux" or _platform == "linux2":
-        return None
+        return '/tmp'
     elif _platform == "darwin":
         return '.'
     elif _platform == "win32":
