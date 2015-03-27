@@ -11,13 +11,17 @@
 import os
 import sys
 import shutil
+import logging
 import subprocess
 import os.path      as op
 from   subprocess   import CalledProcessError
-import logging
+from   functools    import partial
 
 log = logging.getLogger(__name__)
 
+
+def simple_call(cmd_args):
+    return subprocess.call(' '.join(cmd_args), shell=True)
 
 
 def is_exe(fpath):
