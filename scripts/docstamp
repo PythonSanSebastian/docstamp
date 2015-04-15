@@ -22,10 +22,11 @@ if sys.version_info >= (3, 0):
 else:
     from docstamp.unicode_csv import UnicodeReader as DictReader
 
-from  docstamp.template import TextDocument
-from  docstamp.model    import json_to_dict
-from  docstamp.config   import LOGGING_LVL
-#from  docstamp.data_source  import Google_data
+from  docstamp.filenames    import get_extension
+from  docstamp.template     import TextDocument
+from  docstamp.model        import json_to_dict
+from  docstamp.config       import LOGGING_LVL
+from  docstamp.data_source  import Google_data
 
 
 logging.basicConfig(level=LOGGING_LVL)
@@ -174,10 +175,12 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    #create template document model
+    # create template document model
     log.debug('Creating the template object using the file {}.'.format(template))
     template_doc = TextDocument.from_template_file(template, command)
 
+    # get file extension
+    file_extension = get_extension(template)
     log.debug('Created an object of type {}.'.format(type(template_doc)))
 
     # let's stamp them!
@@ -197,7 +200,7 @@ if __name__ == '__main__':
                 exit(-1)
             file_name = '_'.join(field_values)
 
-        log.debug('Filling template with values of item {}. {}'.format(idx, file_name))
+        log.debug('Filling template {} with values of item {}.'.format(file_name, idx))
         try:
             template_doc.fill(item)
         except:
