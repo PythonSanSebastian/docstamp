@@ -51,7 +51,7 @@ def call_inkscape(args_strings, inkscape_binpath=None):
     return call_command(inkscape_binpath, args_strings)
 
 
-def inkscape_export(input_file, output_file, export_flag="-A", dpi=90):
+def inkscape_export(input_file, output_file, export_flag="-A", dpi=90, inkscape_binpath=None):
     """ Call Inkscape to export the input_file to outpu_file using the
     specific export argument flag for the output file type.
 
@@ -81,20 +81,23 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90):
         export_flag += ' '
 
     arg_strings  = []
-    arg_strings += ['{}{}'.format(export_flag, output_file)]
+    arg_strings += ['--without-gui']
+    arg_strings += ['{}"{}"'.format(export_flag, output_file)]
     arg_strings += ['--export-dpi={}'.format(dpi)]
-    arg_strings += [input_file]
+    arg_strings += ['"{}"'.format(input_file)]
 
-    return call_inkscape(arg_strings)
+    return call_inkscape(arg_strings, inkscape_binpath=inkscape_binpath)
 
 
-def svg2pdf(svg_file_path, pdf_file_path, dpi=150):
+def svg2pdf(svg_file_path, pdf_file_path, dpi=150, inkscape_binpath=None):
     """ Transform SVG file to PDF file
     """
-    return inkscape_export(svg_file_path, pdf_file_path, export_flag="-A", dpi=dpi)
+    return inkscape_export(svg_file_path, pdf_file_path, export_flag="-A",
+                           dpi=dpi, inkscape_binpath=inkscape_binpath)
 
 
-def svg2png(svg_file_path, png_file_path, dpi=150):
+def svg2png(svg_file_path, png_file_path, dpi=150, inkscape_binpath=None):
     """ Transform SVG file to PNG file
     """
-    return inkscape_export(svg_file_path, png_file_path, export_flag="-e", dpi=dpi)
+    return inkscape_export(svg_file_path, png_file_path, export_flag="-e",
+                          dpi=dpi, inkscape_binpath=inkscape_binpath)

@@ -133,12 +133,18 @@ def proactive_search_of(app_name):
 
 
 def get_inkscape_binpath():
-    return proactive_search_of('inkscape')
+    if 'INKSCAPE_BINPATH' not in globals():
+        global INKSCAPE_BINPATH
+        INKSCAPE_BINPATH = proactive_search_of('inkscape')
+
+    return INKSCAPE_BINPATH
 
 
 def get_lyx_binpath():
-    return proactive_search_of('lyx')
-
+    if 'LYX_BINPATH' not in globals():
+        global LYX_BINPATH
+        LYX_BINPATH = proactive_search_of('lyx')
+    return LYX_BINPATH
 
 #TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 

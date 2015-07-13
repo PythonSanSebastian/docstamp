@@ -3,7 +3,7 @@
 import csv
 import codecs
 try:
-    import cStringIO as StringIO
+    from cStringIO import StringIO
 except:
     from io import StringIO
 
@@ -52,7 +52,7 @@ class UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
-        self.queue = StringIO.StringIO()
+        self.queue = StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
