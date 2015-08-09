@@ -152,7 +152,7 @@ class TextDocument(object):
 
         try:
             with open(file_path, "w") as f:
-                f.write(self.file_content_)#.encode('utf8'))
+                f.write(self.file_content_.encode('utf-8'))#.encode('utf8'))
         except:
             log.exception('Error saving {} file in {}'.format(str(self.__class__), file_path))
             raise
