@@ -133,6 +133,7 @@ if __name__ == '__main__':
         log.exception('Could not find file {}'.format(input_file))
         exit(-1)
 
+
     # get args
     output_dir       = args.output
     file_type        = args.file_type
@@ -143,6 +144,8 @@ if __name__ == '__main__':
     basename         = args.basename
     command          = args.command
     verbose          = args.verbose
+
+
 
     # setup verbose mode
     verbose_switch(verbose)

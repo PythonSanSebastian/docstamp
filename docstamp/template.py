@@ -157,7 +157,7 @@ class TextDocument(object):
             log.exception('Error saving {} file in {}'.format(str(self.__class__), file_path))
             raise
 
-    def render(self, file_path):
+    def render(self, file_path, **kwargs):
         """ See self.save_content """
         return self.save_content(file_path)
 
@@ -214,6 +214,9 @@ class SVGDocument(TextDocument):
 
         file_type = kwargs.get('file_type', 'pdf')
         dpi       = kwargs.get('dpi',       150)
+
+        #file_type = 'png'
+        #dpi = 150
 
         try:
             if   file_type == 'svg':

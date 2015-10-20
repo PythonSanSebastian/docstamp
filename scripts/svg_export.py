@@ -19,8 +19,8 @@ def create_argparser():
     parser.add_argument('-t', '--type', choices=['pdf', 'png'],
                         action='store', dest='file_type', default='pdf',
                         help='Output file type')
-    parser.add_argument('--dpi', type=int, action='store', dest='dpi',
-                        default=150, help='Output file resolution')
+    #parser.add_argument('--dpi', type=int, action='store', dest='dpi',
+    #                    default=150, help='Output file resolution')
     return parser
 
 
