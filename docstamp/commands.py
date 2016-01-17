@@ -39,32 +39,40 @@ def is_exe(fpath):
     return op.isfile(fpath) and os.access(fpath, os.X_OK)
 
 
-def which(program):
+def which(cmd_name):
     """Returns the absolute path of the given CLI program name."""
     if (sys.version_info > (3, 0)):
-        return which_py3(program)
+        return which_py3(cmd_name)
     else:
         # Python 2 code in this block
-        return which_py2(program)
+        return which_py2(cmd_name)
 
 
-def which_py3(program):
-    return shutil.which(program)
+def which_py3(cmd_name):
+    return shutil.which(cmd_name)
 
 
-def which_py2(program):
-    fpath, fname = os.path.split(program)
+def which_py2(cmd_name):
+    fpath, fname = os.path.split(cmd_name)
     if fpath:
-        if is_exe(program):
-            return program
+        if is_exe(cmd_name):
+            return cmd_name
     else:
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
-            exe_file = os.path.join(path, program)
+            exe_file = os.path.join(path, cmd_name)
             if is_exe(exe_file):
                 return exe_file
 
     return None
+
+
+def check_command(cmd_name):
+    """ Raise a FileNotFoundError if the command is not found.
+    :param cmd_name:
+    """
+    if which(cmd_name) is None:
+        raise FileNotFoundError('Could not find command named {}.'.format(cmd_name))
 
 
 def call_command(cmd_name, args_strings):

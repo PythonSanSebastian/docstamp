@@ -106,7 +106,7 @@ class TextDocument(object):
         try:
             template_file = template_file_path
             template_env  = get_environment_for(template_file_path)
-            template      = template_env.get_template(template_file)
+            template      = template_env.get_template(op.basename(template_file))
         except:
             raise
         else:

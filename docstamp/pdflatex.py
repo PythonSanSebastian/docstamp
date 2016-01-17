@@ -14,7 +14,7 @@ import logging
 import os.path      as      op
 from   glob         import  glob
 
-from   .commands    import  call_command, simple_call
+from   .commands    import  call_command, simple_call, check_command
 from   .filenames   import  remove_ext, cleanup
 
 log = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ def tex2pdf(tex_file, output_file=None, output_format='pdf'):
         raise ValueError("Invalid output format given {}. Can only accept 'pdf' or 'dvi'.".format(output_format))
 
     cmd_name = 'pdflatex'
+    check_command(cmd_name)
 
     args_strings = [cmd_name]
     if output_file is not None:
@@ -101,6 +102,7 @@ def xetex2pdf(tex_file, output_file=None, output_format='pdf'):
         raise ValueError("Invalid output format given {}. Can only accept 'pdf' or 'dvi'.".format(output_format))
 
     cmd_name = 'xelatex'
+    check_command(cmd_name)
 
     args_strings = [cmd_name]
     if output_file is not None:

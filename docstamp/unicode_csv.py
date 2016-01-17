@@ -34,7 +34,7 @@ class UnicodeReader:
 
     def next(self):
         row = self.reader.next()
-        return {unicode(s, "utf-8"):unicode(row[s], "utf-8") for s in row}
+        return {unicode(s, "utf-8"): unicode(row[s], "utf-8") for s in row}
 
     def __iter__(self):
         return self
