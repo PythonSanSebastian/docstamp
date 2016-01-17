@@ -129,3 +129,66 @@ def cleanup(workdir, extension):
         File extension without the dot, e.g., 'txt'
     """
     [os.remove(f) for f in glob(op.join(workdir, '*.' + extension))]
+
+
+def mkdir(dirpath):
+    """Create a folder in `dirpath` if it does'nt exist."""
+    if not op.exists(dirpath):
+        os.mkdir(dirpath)
+
+
+def csv_to_json(csv_filepath, json_filepath, fieldnames, ignore_first_line=True):
+    """ Convert a CSV file in `csv_filepath` into a JSON file in `json_filepath`.
+
+    Parameters
+    ----------
+    csv_filepath: str
+        Path to the input CSV file.
+
+    json_filepath: str
+        Path to the output JSON file. Will be overwritten if exists.
+
+    fieldnames: List[str]
+        Names of the fields in the CSV file.
+
+    ignore_first_line: bool
+    """
+    import csv
+    import json
+
+    csvfile  = open(csv_filepath, 'r')
+    jsonfile = open(json_filepath, 'w')
+
+    reader = csv.DictReader(csvfile, fieldnames)
+    rows   = []
+    if ignore_first_line:
+        next(reader)
+
+    for row in reader:
+        rows.append(row)
+
+    json.dump(rows, jsonfile)
+    jsonfile.close()
+    csvfile.close()
+
+
+def replace_file_content(filepath, old, new, max=0):
+    """ Modify the content of `filepath`, replacing `old` for `new`.
+
+    Parameters
+    ----------
+    filepath: str
+        Path to the file to be modified. It will be overwritten.
+
+    old: str
+        This is old substring to be replaced.
+
+    new: str
+        This is new substring, which would replace old substring.
+
+    max: int
+        If larger than 0, Only the first `max` occurrences are replaced.
+    """
+    with open(filepath, 'r') as f: content = f.read()
+    content = content.replace(old, new, max)
+    with open(filepath, 'w') as f: f.write(content)

@@ -22,7 +22,7 @@ if sys.version_info >= (3, 0):
 else:
     from docstamp.unicode_csv import UnicodeReader as DictReader
 
-from  docstamp.filenames    import get_extension
+from  docstamp.file_utils    import get_extension
 from  docstamp.template     import TextDocument
 from  docstamp.model        import json_to_dict
 from  docstamp.config       import LOGGING_LVL

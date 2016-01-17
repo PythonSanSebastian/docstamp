@@ -15,7 +15,6 @@ import logging
 import subprocess
 import os.path      as op
 from   subprocess   import CalledProcessError
-from   functools    import partial
 
 log = logging.getLogger(__name__)
 

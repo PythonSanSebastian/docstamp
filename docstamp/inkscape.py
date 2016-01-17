@@ -8,8 +8,8 @@
 # Use this at your own risk!
 # -------------------------------------------------------------------------------
 
-import os.path      as op
 import logging
+import os.path as op
 
 from   .config      import get_inkscape_binpath
 from   .commands    import call_command

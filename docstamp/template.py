@@ -16,7 +16,7 @@ from   jinja2 import Environment, FileSystemLoader
 
 from .inkscape import  svg2pdf, svg2png
 from .pdflatex import  tex2pdf, xetex2pdf
-from .filenames import get_tempfile
+from .file_utils import get_tempfile
 
 
 log = logging.getLogger(__name__)

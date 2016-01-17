@@ -45,7 +45,10 @@ setup_dict = dict(
 
     packages=find_packages(),
 
-    install_requires=read('requirements.txt'),
+    install_requires=[
+                      'jinja2'
+                      'Pillow',
+                      ],
 
     #extra_files=['CHANGES.rst', 'LICENSE', 'README.rst'],
 
