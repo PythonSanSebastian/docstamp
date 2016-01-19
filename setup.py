@@ -46,7 +46,7 @@ setup_dict = dict(
     packages=find_packages(),
 
     install_requires=[
-                      'jinja2'
+                      'jinja2',
                       'Pillow',
                       ],
 
