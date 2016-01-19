@@ -192,3 +192,12 @@ def replace_file_content(filepath, old, new, max=0):
     with open(filepath, 'r') as f: content = f.read()
     content = content.replace(old, new, max)
     with open(filepath, 'w') as f: f.write(content)
+
+
+def cleanup_docstamp_mess(output_dir):
+    """ Remove the 'tmp*.aux', 'tmp*.out' and 'tmp*.log' files in `output_dir`.
+    :param output_dir:
+    """
+    suffixes = ['aux', 'out', 'log']
+    files    = [f for suf in suffixes for f in glob('tmp*.{}'.format(suf))]
+    [os.remove(file) for file in files]
