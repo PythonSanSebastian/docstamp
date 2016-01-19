@@ -8,14 +8,12 @@
 # Use this at your own risk!
 # -------------------------------------------------------------------------------
 
-import os
 import shutil
 import logging
 import os.path      as      op
-from   glob         import  glob
 
 from   .commands    import  call_command, simple_call, check_command
-from   .filenames   import  remove_ext, cleanup
+from   .file_utils  import  remove_ext, cleanup
 
 log = logging.getLogger(__name__)
 
