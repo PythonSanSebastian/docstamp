@@ -50,7 +50,7 @@ setup_dict = dict(
                       'Pillow',
                       ],
 
-    #extra_files=['CHANGES.rst', 'LICENSE', 'README.rst'],
+    extra_files=['CHANGES.rst', 'LICENSE', 'README.rst'],
 
     long_description=read('README.rst', 'CHANGES.rst'),
 
