@@ -194,7 +194,7 @@ def replace_file_content(filepath, old, new, max=0):
     with open(filepath, 'w') as f: f.write(content)
 
 
-def cleanup_docstamp_mess(output_dir):
+def cleanup_docstamp_output(output_dir):
     """ Remove the 'tmp*.aux', 'tmp*.out' and 'tmp*.log' files in `output_dir`.
     :param output_dir:
     """
