@@ -3,7 +3,7 @@ Helpers to connect and work with google drive spreadsheets
 """
 import gspread
 import json
-from   oauth2client.client import SignedJwtAssertionCredentials
+from   oauth2client.service_account import ServiceAccountCredentials
 
 
 def connect_to_gspread(google_api_key_file):
@@ -15,13 +15,10 @@ def connect_to_gspread(google_api_key_file):
 
     :return: gspread.client.Client
     """
-    json_key = json.load(open(google_api_key_file))
     scope = ["https://spreadsheets.google.com/feeds"]
 
     # authenticate
-    credentials = SignedJwtAssertionCredentials(json_key["client_email"],
-                                                json_key["private_key"].encode("utf-8"),
-                                                scope)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(google_api_key_file, scope)
     return gspread.authorize(credentials)
 
 
