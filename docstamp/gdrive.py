@@ -29,7 +29,10 @@ def get_spreadsheet(api_key_file_path, doc_key):
     :return: gspread.models.Spreadsheet
     """
     gc = connect_to_gspread(api_key_file_path)
-    return gc.open_by_key(doc_key)
+    if doc_key.startswith('http'):
+        return gc.open_by_url(doc_key)
+    else:
+        return gc.open_by_key(doc_key)
 
 
 def worksheet_to_dict(wks, header='', start_row=1):
