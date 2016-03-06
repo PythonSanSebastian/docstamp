@@ -1,5 +1,5 @@
 docstamp
-======
+========
 
 .. image:: https://pypip.in/v/docstamp/badge.png
     :target: https://pypi.python.org/pypi/docstamp
@@ -40,12 +40,15 @@ To install the latest release::
 Requirements
 ------------
 
-.. include:: ./requirements.txt
-   :literal:
+- Pillow>=3.1.0
+- jinja2>=2.8
+- gspread>=0.3.0
+- oauth2client>=2.0.0
+- pycrypto>=2.6.1
+- svgutils>=0.1.0
+- PyPDF2>=1.25.1
+- qrcode>=5.1
 
-gspread
-Pillow
-jinja2
 
 Compatibility
 -------------
@@ -58,9 +61,11 @@ New BSD license
 
 Authors
 -------
-The author of `docstamp` is `Alexandre M. Savio @alexsavio`_.
+Alexandre M. Savio @alexsavio
 
-Contributors:
+
+Contributors
+------------
 
 Oier Etxaniz @oechaniz
 
