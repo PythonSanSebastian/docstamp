@@ -2,11 +2,12 @@
 Utility functions to create QRCodes using `qrcode`.
 """
 import qrcode
+import qrcode.image.svg
 
 from   .file_utils import replace_file_content
 
 
-def save_into_qrcode(text, out_filepath, color='000000', box_size=10, pixel_size=1850):
+def save_into_qrcode(text, out_filepath, color='', box_size=10, pixel_size=1850):
     """ Save `text` in a qrcode svg image file.
 
     Parameters
@@ -24,7 +25,6 @@ def save_into_qrcode(text, out_filepath, color='000000', box_size=10, pixel_size
         Size of the QR code boxes.
     """
     try:
-        #img = qrcode.make(vcard_string, image_factory=qrcode.image.svg.SvgPathImage, fit=True)
         qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L,
                            box_size=box_size, border=0,)
         qr.add_data(text)
@@ -37,7 +37,7 @@ def save_into_qrcode(text, out_filepath, color='000000', box_size=10, pixel_size
 
     _ = _qrcode_to_file(img, out_filepath)
 
-    if color != '000000':
+    if color:
         replace_file_content(out_filepath, 'fill:#000000', 'fill:#{}'.format(color))
 
     return out_filepath
@@ -58,4 +58,3 @@ def _qrcode_to_file(qrcode, out_filepath):
         raise IOError('Error trying to save QR code file {}.'.format(out_filepath)) from exc
     else:
         return qrcode
-

@@ -3,6 +3,6 @@ jinja2>=2.8
 gspread>=0.3.0
 oauth2client>=2.0.0
 pycrypto>=2.6.1
-svgutils>=0.1.0
 PyPDF2>=1.25.1
 qrcode>=5.1
+git+https://github.com/btel/svg_utils.git@master#egg=svgutils

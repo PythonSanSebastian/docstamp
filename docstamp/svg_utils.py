@@ -34,7 +34,7 @@ def _check_svg_file(svg_file):
 
     Parameters
     ----------
-    svg_file: str or svgutils svg object
+    svg_file: str or svgutils.transform.SVGFigure object
         If a `str`: path to a '.svg' file,
         otherwise a svgutils svg object is expected.
 
@@ -53,8 +53,8 @@ def _check_svg_file(svg_file):
             raise Exception('Error reading svg file {}.'.format(svg_file)) from exc
         else:
             return svg
-    # elif isinstance(svg_file, svgutils.) #TODO check if svg_file is a svgutils svg object
-
+    elif isinstance(svg_file, sg.SVGFigure):
+        return svg_file
     else:
         raise ValueError('Expected `svg_file` to be `str` or `svgutils.SVG`, got {}.'.format(type(svg_file)))
 
@@ -87,9 +87,9 @@ def merge_svg_files(svg_file1, svg_file2, x_coord, y_coord, scale=1):
     svg2 = _check_svg_file(svg_file2)
 
     svg2_root = svg2.getroot()
-    svg2_root.moveto(x_coord, y_coord, scale=scale)
-
     svg1.append([svg2_root])
+
+    svg2_root.moveto(x_coord, y_coord, scale=scale)
 
     return svg1
 

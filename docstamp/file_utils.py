@@ -172,7 +172,7 @@ def csv_to_json(csv_filepath, json_filepath, fieldnames, ignore_first_line=True)
     csvfile.close()
 
 
-def replace_file_content(filepath, old, new, max=0):
+def replace_file_content(filepath, old, new, max=1):
     """ Modify the content of `filepath`, replacing `old` for `new`.
 
     Parameters
@@ -189,15 +189,18 @@ def replace_file_content(filepath, old, new, max=0):
     max: int
         If larger than 0, Only the first `max` occurrences are replaced.
     """
-    with open(filepath, 'r') as f: content = f.read()
+    with open(filepath, 'r') as f:
+        content = f.read()
+
     content = content.replace(old, new, max)
-    with open(filepath, 'w') as f: f.write(content)
+    with open(filepath, 'w') as f:
+        f.write(content)
 
 
-def cleanup_docstamp_output(output_dir):
+def cleanup_docstamp_output(output_dir=''):
     """ Remove the 'tmp*.aux', 'tmp*.out' and 'tmp*.log' files in `output_dir`.
     :param output_dir:
     """
     suffixes = ['aux', 'out', 'log']
-    files    = [f for suf in suffixes for f in glob('tmp*.{}'.format(suf))]
+    files    = [f for suf in suffixes for f in glob(op.join(output_dir, 'tmp*.{}'.format(suf)))]
     [os.remove(file) for file in files]
