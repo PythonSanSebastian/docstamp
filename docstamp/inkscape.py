@@ -82,6 +82,7 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90, inkscape_
 
     arg_strings  = []
     arg_strings += ['--without-gui']
+    arg_strings += ['--export-text-to-path']
     arg_strings += ['{}"{}"'.format(export_flag, output_file)]
     arg_strings += ['--export-dpi={}'.format(dpi)]
     arg_strings += ['"{}"'.format(input_file)]
