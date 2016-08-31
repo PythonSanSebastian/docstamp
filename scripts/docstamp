@@ -84,7 +84,7 @@ def create_argparser():
                         help='''Template file path. The extension of this file will be used to determine
                         what software to use to render the documents: ''' + ACCEPTED_DOCS)
     parser.add_argument('-f', '--file_name_fields', action='append',
-                        dest='file_name_fields',
+                        dest='file_name_fields', default='',
                         help='''The field or fields that will be used to name
                         the output files. Otherwise files will be numbered.''')
     parser.add_argument('-o', '--output', action='store', dest='output',
@@ -96,8 +96,8 @@ def create_argparser():
     parser.add_argument('-d', '--type', choices=['pdf', 'png', 'svg'],
                         action='store', dest='file_type', default='pdf',
                         help='Output file type.')
-    parser.add_argument('-c', '--command', choices=['', 'inkscape', 'pdflatex', 'xelatex'],
-                        action='store', dest='command', default='',
+    parser.add_argument('-c', '--command', choices=['inkscape', 'pdflatex', 'xelatex'],
+                        action='store', dest='command', default='inkscape',
                         help='The rendering command to be used in case file name extension is not specific.')
     parser.add_argument('--idx', action='append', dest='index', default=[],
                         help='''Index/es of the CSV file that you want to create
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
     if not len(file_name_fields):
         # set the number of zeros that the files will have
-        n_zeros = math.floor(math.log10(len(items))) + 1
+        n_zeros = int(math.floor(math.log10(len(items))) + 1)
     else:
         # check that file_name_fields has all valid fields
         for field_name in file_name_fields:

@@ -24,7 +24,7 @@ Usage
 
 The CSV header fields must match the ones in the template file.::
 
-    docstamp -i registrations.csv -t my_template.svg -f name -f surname -o out_folder -n talk_certificate --idx 10
+    docstamp -i badge.csv -t badge_template.svg -o badges
 
 Installation
 ------------
