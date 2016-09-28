@@ -16,7 +16,7 @@ from   jinja2 import Environment, FileSystemLoader
 
 from .inkscape import  svg2pdf, svg2png
 from .pdflatex import  tex2pdf, xetex2pdf
-from .file_utils import get_tempfile
+from .file_utils import get_tempfile, write_to_file
 
 
 log = logging.getLogger(__name__)
@@ -137,7 +137,7 @@ class TextDocument(object):
             self.file_content_ = filled_doc
             return filled_doc
 
-    def save_content(self, file_path):
+    def save_content(self, file_path, encoding='utf-8'):
         """ Save the content of the .txt file in a text file.
 
         Parameters
@@ -151,11 +151,13 @@ class TextDocument(object):
             raise ValueError(msg)
 
         try:
-            with open(file_path, "w") as f:
-                f.write(self.file_content_.encode('utf-8'))#.encode('utf8'))
-        except:
-            log.exception('Error saving {} file in {}'.format(str(self.__class__), file_path))
-            raise
+            write_to_file(file_path, content=self.file_content_,
+                          encoding=encoding)
+        except Exception as exc:
+            msg = 'Document of type {} got an error when writing content.'.format(self.__class__)
+            log.exception(msg)
+            raise Exception(msg) from exc
+
 
     def render(self, file_path, **kwargs):
         """ See self.save_content """

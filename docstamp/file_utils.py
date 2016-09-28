@@ -172,6 +172,31 @@ def csv_to_json(csv_filepath, json_filepath, fieldnames, ignore_first_line=True)
     csvfile.close()
 
 
+def write_to_file(file_path, content, encoding=None):
+    """ Write `content` inside the file in `file_path` with the given encoding.
+    Parameters
+    ----------
+    file_path: str
+        Path to the output file. Will be overwritten if exists.
+
+    content: str
+        The content you want in the file.
+
+    encoding: str
+        The name of the encoding.
+    """
+    try:
+        # TODO: check if in Python2 this should be this way
+        # it's possible that we have to make this function more complex
+        # to check type(content) and depending on that set 'w' without enconde
+        # or 'wb' with encode.
+        with open(file_path, "wb") as f:
+            f.write(content.encode(encoding))
+    except:
+        log.exception('Error writing to file in {}'.format(file_path))
+        raise
+
+
 def replace_file_content(filepath, old, new, max=1):
     """ Modify the content of `filepath`, replacing `old` for `new`.
 

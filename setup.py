@@ -54,8 +54,12 @@ setup_dict = dict(
 
     platforms='Linux/MacOSX',
 
-    scripts=['scripts/svg_export.py',
-             'scripts/docstamp'],
+    entry_points='''
+      [console_scripts]
+      docstamp=docstamp.cli:cli
+      ''',
+
+    scripts=['scripts/svg_export.py',],
 
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

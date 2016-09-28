@@ -97,8 +97,8 @@ def call_command(cmd_name, args_strings):
 
     try:
         cmd_line = [cmd_fullpath] + args_strings
-        log.info('Calling: {}.'.format(cmd_line))
-        #retval = subprocess.check_call(cmd_line)
+        log.debug('Calling: `{}`.'.format(' '.join(cmd_line)))
+
         retval = subprocess.call(' '.join(cmd_line), shell=True)
     except CalledProcessError as ce:
         log.exception("Error calling command with arguments: "

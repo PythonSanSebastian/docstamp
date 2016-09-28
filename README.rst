@@ -24,7 +24,7 @@ Usage
 
 The CSV header fields must match the ones in the template file.::
 
-    docstamp -i badge.csv -t badge_template.svg -o badges
+    docstamp create -i badge.csv -t badge_template.svg -o badges
 
 Installation
 ------------
@@ -40,22 +40,17 @@ To install the latest release::
 Requirements
 ------------
 
-- Pillow>=3.1.0
-- jinja2>=2.8
-- gspread>=0.3.0
-- oauth2client>=2.0.0
-- pycrypto>=2.6.1
-- svgutils>=0.1.0
-- PyPDF2>=1.25.1
-- qrcode>=5.1
+See `requirements.txt` file. Also you will need Inkscape, XeLatex, or PDFLatex
+installed in your system.
 
 
 Compatibility
 -------------
-DocStamp is compatible with Python 2 and 3. I could not test it on Windows.
+DocStamp is compatible with Python 2 (we wish to believe) and 3.
+We could not test it on Windows.
 
 
-Licence
+License
 -------
 New BSD license
 
@@ -70,4 +65,3 @@ Contributors
 Oier Etxaniz @oechaniz
 
 Luis Javier Salvatierra @ljsalvatierra
-
