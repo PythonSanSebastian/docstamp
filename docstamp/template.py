@@ -38,7 +38,6 @@ def get_environment_for(file_path):
 
     if not op.exists(work_dir):
         raise IOError('Could not find folder for dirname of file {}.'.format(file_path))
-
     try:
         jinja_env = Environment(loader=FileSystemLoader(work_dir))
     except:
@@ -221,7 +220,7 @@ class SVGDocument(TextDocument):
         #dpi = 150
 
         try:
-            if   file_type == 'svg':
+            if file_type == 'svg':
                 shutil.copyfile(temp.name, file_path)
             elif file_type == 'png':
                 svg2png(temp.name, file_path, dpi=dpi)

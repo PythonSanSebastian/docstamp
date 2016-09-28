@@ -133,9 +133,13 @@ def proactive_search_of(app_name):
 
 
 def get_inkscape_binpath():
+    bin_name = 'inkscape'
+    if _platform == "darwin":
+        bin_name = 'inkscape-bin'
+
     if 'INKSCAPE_BINPATH' not in globals():
         global INKSCAPE_BINPATH
-        INKSCAPE_BINPATH = proactive_search_of('inkscape')
+        INKSCAPE_BINPATH = proactive_search_of(bin_name)
 
     return INKSCAPE_BINPATH
 
