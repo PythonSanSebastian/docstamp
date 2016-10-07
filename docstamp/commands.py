@@ -82,7 +82,7 @@ def call_command(cmd_name, args_strings):
     cmd_name: str
         Command name or full path to the binary file.
 
-    arg_strings: str
+    arg_strings: List[str]
         Argument strings list.
 
     Returns
