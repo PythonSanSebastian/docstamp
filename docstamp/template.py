@@ -17,7 +17,7 @@ from   jinja2 import Environment, FileSystemLoader
 from .inkscape import  svg2pdf, svg2png
 from .pdflatex import  tex2pdf, xetex2pdf
 from .file_utils import get_tempfile, write_to_file
-
+from .svg_utils import replace_chars_for_svg_code
 
 log = logging.getLogger(__name__)
 
@@ -194,6 +194,27 @@ class TextDocument(object):
 class SVGDocument(TextDocument):
     """ A .svg template document model. See GenericDocument. """
     _template_file = 'badge_template.svg'
+
+    def fill(self, doc_contents):
+        """ Fill the content of the document with the information in doc_contents.
+        This is different from the TextDocument fill function, because this will
+        check for symbools in the values of `doc_content` and replace them
+        to good XML codes before filling the template.
+
+        Parameters
+        ----------
+        doc_contents: dict
+            Set of values to set the template document.
+
+        Returns
+        -------
+        filled_doc: str
+            The content of the document with the template information filled.
+        """
+        for key, content in doc_contents.items():
+            doc_contents[key] = replace_chars_for_svg_code(content)
+
+        return super(SVGDocument, self).fill(doc_contents=doc_contents)
 
     def render(self, file_path, **kwargs):
         """ Save the content of the .svg file in the chosen rendered format.
