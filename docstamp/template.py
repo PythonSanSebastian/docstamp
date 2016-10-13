@@ -38,6 +38,7 @@ def get_environment_for(file_path):
 
     if not op.exists(work_dir):
         raise IOError('Could not find folder for dirname of file {}.'.format(file_path))
+
     try:
         jinja_env = Environment(loader=FileSystemLoader(work_dir))
     except:
@@ -145,7 +146,8 @@ class TextDocument(object):
             Path to the output file.
         """
         if self.file_content_ is None:
-            msg = 'Template content has not been updated. Please fill the template before rendering it.'
+            msg = 'Template content has not been updated. \
+                   Please fill the template before rendering it.'
             log.exception(msg)
             raise ValueError(msg)
 
@@ -153,7 +155,8 @@ class TextDocument(object):
             write_to_file(file_path, content=self.file_content_,
                           encoding=encoding)
         except Exception as exc:
-            msg = 'Document of type {} got an error when writing content.'.format(self.__class__)
+            msg = 'Document of type {} got an error when \
+                   writing content.'.format(self.__class__)
             log.exception(msg)
             raise Exception(msg) from exc
 
@@ -215,12 +218,8 @@ class SVGDocument(TextDocument):
 
         file_type = kwargs.get('file_type', 'pdf')
         dpi       = kwargs.get('dpi',       150)
-
-        #file_type = 'png'
-        #dpi = 150
-
         try:
-            if file_type == 'svg':
+            if   file_type == 'svg':
                 shutil.copyfile(temp.name, file_path)
             elif file_type == 'png':
                 svg2png(temp.name, file_path, dpi=dpi)
