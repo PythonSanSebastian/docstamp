@@ -2,7 +2,6 @@
 Helpers to connect and work with google drive spreadsheets
 """
 import gspread
-import json
 from   oauth2client.service_account import ServiceAccountCredentials
 
 
