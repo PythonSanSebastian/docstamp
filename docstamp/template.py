@@ -166,12 +166,17 @@ class TextDocument(object):
         return self.save_content(file_path)
 
     @classmethod
-    def from_template_file(self, template_file_path, command=None):
-        """ Create
+    def from_template_file(cls, template_file_path, command=None):
+        """ Factory function to create a specific document of the
+        class given by the `command` or the extension of `template_file_path`.
+
+        See get_doctype_by_command and get_doctype_by_extension.
 
         Parameters
         ----------
         template_file_path: str
+
+        command: str
 
         Returns
         -------
