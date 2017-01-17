@@ -1,5 +1,13 @@
 .. -*- mode: rst -*-
 
+|Python27|_ |Python35|_ |PyPi|_
+
+.. |Python27| image:: https://img.shields.io/badge/python-2.7-blue.svg
+.. _Python27: https://badge.fury.io/py/docstamp
+
+.. |Python35| image:: https://img.shields.io/badge/python-3.5-blue.svg
+.. _Python35: https://badge.fury.io/py/docstamp
+
 .. |PyPi| image:: https://badge.fury.io/py/docstamp.svg
 .. _PyPi: https://badge.fury.io/py/docstamp
 
