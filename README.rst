@@ -23,7 +23,9 @@ one rendered template file for each row of the data.
 It is PDF centric, however it can also export in some cases to PNG.
 
 It needs:
+
 - Inkscape for .SVG templates, and
+
 - PDFLateX or XeLateX for LateX templates.
 
 
