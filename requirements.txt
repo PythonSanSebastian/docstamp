@@ -5,5 +5,5 @@ oauth2client>=2.0.0
 pycrypto>=2.6.1
 PyPDF2>=1.25.1
 qrcode>=5.1
-git+https://github.com/btel/svg_utils.git@master#egg=svgutils
+svgutils==0.2.0
 click>=6.6
