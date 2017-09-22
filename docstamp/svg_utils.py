@@ -17,11 +17,13 @@ def replace_chars_for_svg_code(svg_content):
         Corrected SVG content
     """
     result = svg_content
-    svg_char = {'&': '&amp;',
-                '>': '&gt;',
-                '<': '&lt;'}
-    for c in svg_char:
-        result = result.replace(c, svg_char[c])
+    svg_char = [('&', '&amp;'),
+                ('>', '&gt;'),
+                ('<', '&lt;'),
+                ('"', '&quot;'),
+               ]
+    for c, entity in svg_char:
+        result = result.replace(c, entity)
 
     return result
 
@@ -92,4 +94,3 @@ def merge_svg_files(svg_file1, svg_file2, x_coord, y_coord, scale=1):
     svg2_root.moveto(x_coord, y_coord, scale=scale)
 
     return svg1
-
