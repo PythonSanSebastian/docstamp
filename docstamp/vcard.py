@@ -1,9 +1,6 @@
 """
-Function helpers to manage contact lists and vcard formats.
+Function helpers to create vcard formats.
 """
-from   collections import namedtuple
-from   copy        import copy
-
 
 def create_vcard3_str(name, surname, displayname, email='', org='', title='', url='', note=''):
     """ Create a vCard3.0 string with the given parameters.

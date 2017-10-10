@@ -23,10 +23,6 @@ def save_into_qrcode(text, out_filepath, color='', box_size=10, pixel_size=1850)
 
     box_size: scalar
         Size of the QR code boxes.
-
-    Returns
-    -------
-    out_filepath: str
     """
     try:
         qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -43,8 +39,6 @@ def save_into_qrcode(text, out_filepath, color='', box_size=10, pixel_size=1850)
 
     if color:
         replace_file_content(out_filepath, 'fill:#000000', 'fill:#{}'.format(color))
-
-    return out_filepath
 
 
 def _qrcode_to_file(qrcode, out_filepath):

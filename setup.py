@@ -59,7 +59,8 @@ setup_dict = dict(
       docstamp=docstamp.cli:cli
       ''',
 
-    scripts=['scripts/svg_export.py',],
+    scripts=['scripts/svg_export.py',
+             'scripts/embed_font_to_svg.py'],
 
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

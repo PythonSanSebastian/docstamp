@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-
-import logging
-
-log = logging.getLogger(__name__)
+import os
+import pickle
 
 
 class Enum(set):
@@ -28,29 +26,17 @@ class ItemSet(object):
         if hasattr(self.items, '__getitem__'):
             return self.items[item]
         else:
-            raise log.exception('Item set has no __getitem__ implemented.')
+            raise AttributeError('Item set has no __getitem__ implemented.')
 
     def __len__(self):
         return len(self.items)
 
     def save(self, file_path):
-        import pickle
-        try:
-            with open(file_path, 'wb'):
-                pickle.dump(self.__dict__, file_path, pickle.HIGHEST_PROTOCOL)
-        except Exception as exc:
-            log.exception('Error pickling itemset into {}.'.format(file_path))
-            raise
+        with open(file_path, 'wb'):
+            pickle.dump(self.__dict__, file_path, pickle.HIGHEST_PROTOCOL)
 
     def load_from_pickle(self, file_path):
-        import pickle
-        try:
-            with open(file_path, 'rb'):
-                adict = pickle.load(file_path)
-                pickle.dump(self.__dict__, file_path, pickle.HIGHEST_PROTOCOL)
-
-            self.__dict__.update(adict)
-        except Exception as exc:
-            log.exception('Error loading pickle itemset '
-                          'from {}.'.format(file_path))
-            raise
+        with open(file_path, 'rb'):
+            adict = pickle.load(file_path)
+            pickle.dump(self.__dict__, file_path, pickle.HIGHEST_PROTOCOL)
+        self.__dict__.update(adict)
