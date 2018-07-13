@@ -13,8 +13,7 @@ import sys
 import shutil
 import logging
 import subprocess
-import os.path      as op
-from   subprocess   import CalledProcessError
+from subprocess import CalledProcessError
 
 log = logging.getLogger(__name__)
 
@@ -35,12 +34,12 @@ def is_exe(fpath):
     -------
     is_executable: bool
     """
-    return op.isfile(fpath) and os.access(fpath, os.X_OK)
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
 
 def which(cmd_name):
     """Returns the absolute path of the given CLI program name."""
-    if (sys.version_info > (3, 0)):
+    if sys.version_info > (3, 0):
         return which_py3(cmd_name)
     else:
         # Python 2 code in this block
@@ -90,7 +89,7 @@ def call_command(cmd_name, args_strings):
     return_value
         Command return value.
     """
-    if not op.isabs(cmd_name):
+    if not os.path.isabs(cmd_name):
         cmd_fullpath = which(cmd_name)
     else:
         cmd_fullpath = cmd_name
@@ -98,11 +97,13 @@ def call_command(cmd_name, args_strings):
     try:
         cmd_line = [cmd_fullpath] + args_strings
         log.debug('Calling: `{}`.'.format(' '.join(cmd_line)))
-        #retval = subprocess.check_call(cmd_line)
+        # retval = subprocess.check_call(cmd_line)
         retval = subprocess.call(' '.join(cmd_line), shell=True)
     except CalledProcessError as ce:
-        log.exception("Error calling command with arguments: "
-                      "{} \n With return code: {}".format(cmd_line, ce.returncode))
+        log.exception(
+            "Error calling command with arguments: "
+            "{} \n With return code: {}".format(cmd_line, ce.returncode)
+        )
         raise
     else:
         return retval

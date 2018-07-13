@@ -9,10 +9,11 @@
 # -------------------------------------------------------------------------------
 
 
-import os.path as op
+import os
 import shutil
 import logging
-from   jinja2 import Environment, FileSystemLoader
+
+from jinja2 import Environment, FileSystemLoader
 
 from .inkscape import  svg2pdf, svg2png
 from .pdflatex import  tex2pdf, xetex2pdf
@@ -34,9 +35,9 @@ def get_environment_for(file_path):
     jinja_env: Jinja2.Environment
 
     """
-    work_dir = op.dirname(op.abspath(file_path))
+    work_dir = os.path.dirname(os.path.abspath(file_path))
 
-    if not op.exists(work_dir):
+    if not os.path.exists(work_dir):
         raise IOError('Could not find folder for dirname of file {}.'.format(file_path))
 
     try:
@@ -87,7 +88,7 @@ class TextDocument(object):
         Dictionary with content values for the template to be filled.
     """
     def __init__(self, template_file_path, doc_contents=None):
-        if not op.exists(template_file_path):
+        if not os.path.exists(template_file_path):
             raise IOError('Could not find template file {}.'.format(template_file_path))
 
         self._setup_template_file(template_file_path)
@@ -106,7 +107,7 @@ class TextDocument(object):
         try:
             template_file = template_file_path
             template_env  = get_environment_for(template_file_path)
-            template      = template_env.get_template(op.basename(template_file))
+            template      = template_env.get_template(os.path.basename(template_file))
         except:
             raise
         else:
@@ -160,7 +161,6 @@ class TextDocument(object):
             log.exception(msg)
             raise Exception(msg) from exc
 
-
     def render(self, file_path, **kwargs):
         """ See self.save_content """
         return self.save_content(file_path)
@@ -184,7 +184,7 @@ class TextDocument(object):
 
         """
         # get template file extension
-        ext = op.basename(template_file_path).split('.')[-1]
+        ext = os.path.basename(template_file_path).split('.')[-1]
 
         try:
             doc_type = get_doctype_by_command(command)
@@ -243,17 +243,18 @@ class SVGDocument(TextDocument):
         self.save_content(temp.name)
 
         file_type = kwargs.get('file_type', 'pdf')
-        dpi       = kwargs.get('dpi',       150)
+        dpi = kwargs.get('dpi',       150)
         try:
-            if   file_type == 'svg':
+            if file_type == 'svg':
                 shutil.copyfile(temp.name, file_path)
             elif file_type == 'png':
                 svg2png(temp.name, file_path, dpi=dpi)
             elif file_type == 'pdf':
                 svg2pdf(temp.name, file_path, dpi=dpi)
         except:
-            log.exception('Error exporting file {} to {}'.format(file_path,
-                                                                 file_type))
+            log.exception(
+                'Error exporting file {} to {}'.format(file_path, file_type)
+            )
             raise
 
 

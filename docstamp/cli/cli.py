@@ -4,21 +4,20 @@ import click
 import os
 import math
 import logging
-import os.path as op
 
-from  ..file_utils   import get_extension
-from  ..template     import TextDocument
-from  ..config       import LOGGING_LVL
-from  ..data_source  import Google_data
+from ..file_utils import get_extension
+from ..template import TextDocument
+from ..config import LOGGING_LVL
+from ..data_source import Google_data
 
-
-from .utils import (CONTEXT_SETTINGS,
-                    verbose_switch,
-                    get_items_from_csv,
-                    ExistingFilePath,
-                    DirPath,
-                    check_not_none,)
-
+from .utils import (
+    CONTEXT_SETTINGS,
+    verbose_switch,
+    get_items_from_csv,
+    ExistingFilePath,
+    DirPath,
+    check_not_none,
+)
 
 ACCEPTED_DOCS = "Inkscape (.svg), PDFLatex (.tex), XeLatex (.tex)"
 
@@ -32,8 +31,8 @@ def cli():
 @cli.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-i', '--input', type=ExistingFilePath, required=False,
               help='Path to the CSV file with the data elements to be used to '
-                    'fill the template. This file must have the same fields as '
-                    'the template file.')
+                   'fill the template. This file must have the same fields as '
+                   'the template file.')
 @click.option('-t', '--template', type=ExistingFilePath, required=True,
               help='Template file path. The extension of this file will be '
                    'used to determine what software to use to render the '
@@ -84,15 +83,6 @@ def create(input, template, field, outdir, prefix, otype, command, index,
         input_file = input
 
     fields = field
-    # # get args
-    # output_dir       = args.output
-    # file_type        = args.file_type
-    # template         = args.template
-    # file_name_fields = args.file_name_fields
-    # index            = args.index
-    # dpi              = args.dpi
-    # basename         = args.basename
-    # command          = args.command
 
     # init set of template contents
     log.debug('Reading CSV elements from {}.'.format(input_file))
@@ -103,7 +93,7 @@ def create(input, template, field, outdir, prefix, otype, command, index,
         click.echo('Quiting because found 0 items.')
         exit(-1)
 
-    if not len(fields):
+    if not fields:
         # set the number of zeros that the files will have
         n_zeros = int(math.floor(math.log10(len(items))) + 1)
     else:
@@ -116,7 +106,7 @@ def create(input, template, field, outdir, prefix, otype, command, index,
     # filter the items if index
     if index:
         myitems = {int(idx): items[int(idx)] for idx in index}
-        items   = myitems
+        items = myitems
         log.debug('Using the elements with index {} of the input '
                   'file.'.format(index))
 
@@ -157,13 +147,13 @@ def create(input, template, field, outdir, prefix, otype, command, index,
         # set output file path
         file_extension = get_extension(template)
         if prefix is None:
-            basename = op.basename(template).replace(file_extension, '')
+            basename = os.path.basename(template).replace(file_extension, '')
 
         file_name = basename + '_' + file_name
         file_path = os.path.join(outdir, file_name + '.' + otype)
 
         kwargs = {'file_type': otype,
-                  'dpi':       dpi}
+                  'dpi': dpi}
 
         log.debug('Rendering file {}.'.format(file_path))
         try:
