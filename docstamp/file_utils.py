@@ -9,13 +9,11 @@
 # -------------------------------------------------------------------------------
 
 import os
-import os.path  as op
 import tempfile
 import logging
-from   glob     import glob
+from glob import glob
 
-from   .config  import get_temp_dir
-
+from docstamp.config import get_temp_dir
 
 log = logging.getLogger(__name__)
 
@@ -36,13 +34,13 @@ def get_extension(filepath, check_if_exists=False):
     The extension of the file name or path
     """
     if check_if_exists:
-        if not op.exists(filepath):
+        if not os.path.exists(filepath):
             err = 'File not found: ' + filepath
             log.error(err)
             raise IOError(err)
 
     try:
-        rest, ext = op.splitext(filepath)
+        rest, ext = os.path.splitext(filepath)
     except:
         raise
     else:
@@ -70,7 +68,7 @@ def add_extension_if_needed(filepath, ext, check_if_exists=False):
         filepath += ext
 
     if check_if_exists:
-        if not op.exists(filepath):
+        if not os.path.exists(filepath):
             err = 'File not found: ' + filepath
             log.error(err)
             raise IOError(err)
@@ -128,12 +126,12 @@ def cleanup(workdir, extension):
     extension: str
         File extension without the dot, e.g., 'txt'
     """
-    [os.remove(f) for f in glob(op.join(workdir, '*.' + extension))]
+    [os.remove(f) for f in glob(os.path.join(workdir, '*.' + extension))]
 
 
 def mkdir(dirpath):
     """Create a folder in `dirpath` if it does'nt exist."""
-    if not op.exists(dirpath):
+    if not os.path.exists(dirpath):
         os.mkdir(dirpath)
 
 
@@ -156,11 +154,11 @@ def csv_to_json(csv_filepath, json_filepath, fieldnames, ignore_first_line=True)
     import csv
     import json
 
-    csvfile  = open(csv_filepath, 'r')
+    csvfile = open(csv_filepath, 'r')
     jsonfile = open(json_filepath, 'w')
 
     reader = csv.DictReader(csvfile, fieldnames)
-    rows   = []
+    rows = []
     if ignore_first_line:
         next(reader)
 
@@ -227,5 +225,5 @@ def cleanup_docstamp_output(output_dir=''):
     :param output_dir:
     """
     suffixes = ['aux', 'out', 'log']
-    files    = [f for suf in suffixes for f in glob(op.join(output_dir, 'tmp*.{}'.format(suf)))]
+    files = [f for suf in suffixes for f in glob(os.path.join(output_dir, 'tmp*.{}'.format(suf)))]
     [os.remove(file) for file in files]

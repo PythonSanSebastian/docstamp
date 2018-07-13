@@ -7,8 +7,6 @@
 # 2015, Alexandre Manhaes Savio
 # Use this at your own risk!
 # -------------------------------------------------------------------------------
-
-
 import json
 
 

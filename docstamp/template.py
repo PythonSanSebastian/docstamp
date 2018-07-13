@@ -15,8 +15,8 @@ import logging
 
 from jinja2 import Environment, FileSystemLoader
 
-from .inkscape import  svg2pdf, svg2png
-from .pdflatex import  tex2pdf, xetex2pdf
+from .inkscape import svg2pdf, svg2png
+from .pdflatex import tex2pdf, xetex2pdf
 from .file_utils import get_tempfile, write_to_file
 from .svg_utils import replace_chars_for_svg_code
 
@@ -87,6 +87,7 @@ class TextDocument(object):
     doc_contents: dict
         Dictionary with content values for the template to be filled.
     """
+
     def __init__(self, template_file_path, doc_contents=None):
         if not os.path.exists(template_file_path):
             raise IOError('Could not find template file {}.'.format(template_file_path))
@@ -106,14 +107,14 @@ class TextDocument(object):
         """
         try:
             template_file = template_file_path
-            template_env  = get_environment_for(template_file_path)
-            template      = template_env.get_template(os.path.basename(template_file))
+            template_env = get_environment_for(template_file_path)
+            template = template_env.get_template(os.path.basename(template_file))
         except:
             raise
         else:
             self._template_file = template_file
-            self._template_env  = template_env
-            self.template       = template
+            self._template_env = template_env
+            self.template = template
 
     def fill(self, doc_contents):
         """ Fill the content of the document with the information in doc_contents.
@@ -243,7 +244,7 @@ class SVGDocument(TextDocument):
         self.save_content(temp.name)
 
         file_type = kwargs.get('file_type', 'pdf')
-        dpi = kwargs.get('dpi',       150)
+        dpi = kwargs.get('dpi', 150)
         try:
             if file_type == 'svg':
                 shutil.copyfile(temp.name, file_path)

@@ -11,8 +11,8 @@
 import os
 import logging
 
-from .config import get_inkscape_binpath
-from .commands import call_command
+from docstamp.config import get_inkscape_binpath
+from docstamp.commands import call_command
 
 log = logging.getLogger(__name__)
 

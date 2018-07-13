@@ -11,10 +11,9 @@
 import os
 import re
 import logging
-import os.path      as op
-from   sys          import platform as _platform
+from sys import platform as _platform
 
-from   .commands    import which, is_exe
+from docstamp.commands import which, is_exe
 
 LOGGING_LVL = logging.INFO
 logging.basicConfig(level=LOGGING_LVL)
@@ -41,7 +40,7 @@ def find_file_match(folder_path, regex=''):
     """
     outlist = []
     for root, dirs, files in os.walk(folder_path):
-        outlist.extend([op.join(root, f) for f in files
+        outlist.extend([os.path.join(root, f) for f in files
                         if re.match(regex, f)])
 
     return outlist
@@ -61,7 +60,7 @@ def get_other_program_folders():
     if _platform == "linux" or _platform == "linux2":
         return ['/opt/bin']
     elif _platform == "darwin":
-        return ['/Applications', op.join(os.environ['HOME'], 'Applications')]
+        return ['/Applications', os.path.join(os.environ['HOME'], 'Applications')]
     elif _platform == "win32":
         # don't know if this works
         return ['C:\Program Files']
@@ -79,7 +78,7 @@ def get_temp_dir():
 
 def find_in_other_programs_folders(app_name):
     app_name_regex = '^' + app_name + '$'
-    other_folders  = get_other_program_folders()
+    other_folders = get_other_program_folders()
 
     for folder in other_folders:
         abin_file = find_program(folder, app_name_regex)
@@ -102,7 +101,7 @@ def ask_for_path_of(app_name):
     while bin_path is not None:
         bin_path = input('Insert path of {} executable file [Press Ctrl+C to exit]: '.format(app_name))
 
-        if not op.exists(bin_path):
+        if not os.path.exists(bin_path):
             print('Could not find file {}. Try it again.'.format(bin_path))
             bin_path = None
             continue
@@ -150,10 +149,10 @@ def get_lyx_binpath():
         LYX_BINPATH = proactive_search_of('lyx')
     return LYX_BINPATH
 
-#TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+# TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
 # JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
-#JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
+# JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
 # FILE_EXPORTERS = {'.svg': Inkscape,}
 #                   '.tex': PdfLatex,

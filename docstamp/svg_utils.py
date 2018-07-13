@@ -21,7 +21,7 @@ def replace_chars_for_svg_code(svg_content):
                 ('>', '&gt;'),
                 ('<', '&lt;'),
                 ('"', '&quot;'),
-               ]
+                ]
     for c, entity in svg_char:
         result = result.replace(c, entity)
 

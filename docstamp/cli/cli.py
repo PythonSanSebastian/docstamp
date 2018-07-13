@@ -5,12 +5,12 @@ import os
 import math
 import logging
 
-from ..file_utils import get_extension
-from ..template import TextDocument
-from ..config import LOGGING_LVL
-from ..data_source import Google_data
+from docstamp.file_utils import get_extension
+from docstamp.template import TextDocument
+from docstamp.config import LOGGING_LVL
+from docstamp.data_source import GoogleData
 
-from .utils import (
+from docstamp.cli.utils import (
     CONTEXT_SETTINGS,
     verbose_switch,
     get_items_from_csv,

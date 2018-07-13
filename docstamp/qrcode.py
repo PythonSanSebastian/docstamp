@@ -4,7 +4,7 @@ Utility functions to create QRCodes using `qrcode`.
 import qrcode
 import qrcode.image.svg
 
-from   .file_utils import replace_file_content
+from docstamp.file_utils import replace_file_content
 
 
 def save_into_qrcode(text, out_filepath, color='', box_size=10, pixel_size=1850):
@@ -26,7 +26,7 @@ def save_into_qrcode(text, out_filepath, color='', box_size=10, pixel_size=1850)
     """
     try:
         qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L,
-                           box_size=box_size, border=0,)
+                           box_size=box_size, border=0, )
         qr.add_data(text)
         qr.make(fit=True)
     except Exception as exc:

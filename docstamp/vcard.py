@@ -2,11 +2,12 @@
 Function helpers to create vcard formats.
 """
 
+
 def create_vcard3_str(name, surname, displayname, email='', org='', title='', url='', note=''):
     """ Create a vCard3.0 string with the given parameters.
     Reference: http://www.evenx.com/vcard-3-0-format-specification
     """
-    vcard  = []
+    vcard = []
     vcard += ['BEGIN:VCARD']
     vcard += ['VERSION:3.0']
 

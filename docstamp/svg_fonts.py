@@ -64,7 +64,7 @@ class FontFace(object):
 
     @property
     def css_text(self):
-        css_text  = u"@font-face{\n"
+        css_text = u"@font-face{\n"
         css_text += u"font-family: " + self.name + ";\n"
         css_text += u"src: url(data:font/" + self.ext + ";"
         css_text += u"base64," + self.base64 + ") "
@@ -80,7 +80,7 @@ class FontFaceGroup(object):
 
     @property
     def css_text(self):
-        css_text  = u'<style type="text/css">'
+        css_text = u'<style type="text/css">'
         for ff in self.fontfaces:
             css_text += ff.css_text
         css_text += u'</style>'

@@ -8,12 +8,12 @@
 # Use this at your own risk!
 # -------------------------------------------------------------------------------
 
+import os
 import shutil
 import logging
-import os.path      as      op
 
-from   .commands    import  call_command, simple_call, check_command
-from   .file_utils  import  remove_ext, cleanup
+from docstamp.commands import call_command, simple_call, check_command
+from docstamp.file_utils import remove_ext, cleanup
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def tex2pdf(tex_file, output_file=None, output_format='pdf'):
     return_value
         PDFLatex command call return value.
     """
-    if not op.exists(tex_file):
+    if not os.path.exists(tex_file):
         raise IOError('Could not find file {}.'.format(tex_file))
 
     if output_format != 'pdf' and output_format != 'dvi':
@@ -49,19 +49,19 @@ def tex2pdf(tex_file, output_file=None, output_format='pdf'):
 
     args_strings = [cmd_name]
     if output_file is not None:
-        args_strings += ['-output-directory="{}" '.format(op.abspath(op.dirname(output_file)))]
+        args_strings += ['-output-directory="{}" '.format(os.path.abspath(os.path.dirname(output_file)))]
 
-    result_dir = op.dirname(output_file) if output_file else op.dirname(tex_file)
+    result_dir = os.path.dirname(output_file) if output_file else os.path.dirname(tex_file)
 
     args_strings += ['-output-format="{}"'.format(output_format)]
     args_strings += ['"' + tex_file + '"']
 
     log.debug('Calling command {} with args: {}.'.format(cmd_name, args_strings))
-    #ret = call_command(cmd_name, args_strings)
+    # ret = call_command(cmd_name, args_strings)
     ret = simple_call(args_strings)
 
-    result_file = op.join(result_dir, remove_ext(op.basename(tex_file)) + '.' + output_format)
-    if op.exists(result_file):
+    result_file = os.path.join(result_dir, remove_ext(os.path.basename(tex_file)) + '.' + output_format)
+    if os.path.exists(result_file):
         shutil.move(result_file, output_file)
     else:
         raise IOError('Could not find PDFLatex result file.')
@@ -93,7 +93,7 @@ def xetex2pdf(tex_file, output_file=None, output_format='pdf'):
     return_value
         XeLatex command call return value.
     """
-    if not op.exists(tex_file):
+    if not os.path.exists(tex_file):
         raise IOError('Could not find file {}.'.format(tex_file))
 
     if output_format != 'pdf' and output_format != 'dvi':
@@ -104,20 +104,20 @@ def xetex2pdf(tex_file, output_file=None, output_format='pdf'):
 
     args_strings = [cmd_name]
     if output_file is not None:
-        args_strings += ['-output-directory="{}"'.format(op.abspath(op.dirname(output_file)))]
+        args_strings += ['-output-directory="{}"'.format(os.path.abspath(os.path.dirname(output_file)))]
 
     if output_format == 'dvi':
         args_strings += ['-no-pdf']
 
-    result_dir = op.dirname(output_file) if output_file else op.dirname(tex_file)
+    result_dir = os.path.dirname(output_file) if output_file else os.path.dirname(tex_file)
     args_strings += ['"' + tex_file + '"']
 
     log.debug('Calling command {} with args: {}.'.format(cmd_name, args_strings))
-    #ret = call_command(cmd_name, args_strings)
+    # ret = call_command(cmd_name, args_strings)
     ret = simple_call(args_strings)
 
-    result_file = op.join(result_dir, remove_ext(op.basename(tex_file)) + '.pdf')
-    if op.exists(result_file):
+    result_file = os.path.join(result_dir, remove_ext(os.path.basename(tex_file)) + '.pdf')
+    if os.path.exists(result_file):
         shutil.move(result_file, output_file)
     else:
         raise IOError('Could not find PDFLatex result file.')

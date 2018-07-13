@@ -4,8 +4,7 @@ Function helpers to treat XML content.
 
 from xml.sax.saxutils import escape, unescape
 
-from .file_utils      import replace_file_content
-
+from .file_utils import replace_file_content
 
 xml_escape_table = {
     "&": "&amp;",
@@ -65,4 +64,3 @@ def change_xml_encoding(filepath, src_enc, dst_enc='utf-8'):
     """
     enc_attr = "encoding='{}'"
     replace_file_content(filepath, enc_attr.format(src_enc), enc_attr.format(dst_enc), 1)
-

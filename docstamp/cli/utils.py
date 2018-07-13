@@ -9,19 +9,17 @@ import logging
 
 import click
 
-from ..model import json_to_dict
-
+from docstamp.model import json_to_dict
 
 # different context options
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 UNKNOWN_OPTIONS = dict(allow_extra_args=True,
                        ignore_unknown_options=True)
 
-
 # specification of existing ParamTypes
 DirPath = click.Path(file_okay=False, resolve_path=True)
-ExistingDirPath  = click.Path(exists=True, file_okay=False, resolve_path=True)
-ExistingFilePath = click.Path(exists=True,  dir_okay=False, resolve_path=True)
+ExistingDirPath = click.Path(exists=True, file_okay=False, resolve_path=True)
+ExistingFilePath = click.Path(exists=True, dir_okay=False, resolve_path=True)
 UnexistingFilePath = click.Path(dir_okay=False, resolve_path=True)
 
 

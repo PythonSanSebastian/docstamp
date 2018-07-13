@@ -2,7 +2,7 @@
 Helpers to connect and work with google drive spreadsheets
 """
 import gspread
-from   oauth2client.service_account import ServiceAccountCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 def connect_to_gspread(google_api_key_file):

@@ -1,13 +1,12 @@
-
 import sys
 
-from  .unicode_csv import UnicodeWriter
+from .unicode_csv import UnicodeWriter
 
 if sys.version_info[0] >= 3:
     raw_input = input
 
 
-class Google_data:
+class GoogleData:
 
     def getCSV(self):
         """
@@ -18,15 +17,15 @@ class Google_data:
         import getpass
         import gspread
 
-        user     = raw_input        ("Insert Google username:")
-        password = getpass.getpass  (prompt="Insert password:")
-        name     = raw_input        ("SpreadSheet filename on Drive:")
-        sheet    = raw_input        ("Sheet name (first sheet is default):")
+        user = raw_input("Insert Google username:")
+        password = getpass.getpass(prompt="Insert password:")
+        name = raw_input("SpreadSheet filename on Drive:")
+        sheet = raw_input("Sheet name (first sheet is default):")
 
         cl = gspread.login(user, password)
         sh = cl.open(name)
 
-        if not(sheet.strip()):
+        if not (sheet.strip()):
             ws = sh.sheet1
             sheet = "1"
         else:
