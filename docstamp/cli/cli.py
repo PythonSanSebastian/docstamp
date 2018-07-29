@@ -57,10 +57,12 @@ def cli():
                    'document from. Note that the samples numbers start from 0 '
                    'and the empty ones do not count.')
 @click.option('--dpi', type=int, default=150, help='Output file resolution')
-@click.option('-g', '--google', is_flag=True, flag_value=True,
+@click.option('-g', '--google', is_flag=True, 
               help='Fetch data from Google Drive')
-@click.option('-v', '--verbose', is_flag=True, flag_value=True,
+@click.option('-v', '--verbose', is_flag=True, 
               help='Output debug logs.')
+@click.option('-u', '--unicode_support', is_flag=True, default=False,
+              help='Allows unicode characters to be correctly encoded in the PDF.')
 def create(input, template, field, outdir, prefix, otype, command, index,
            dpi, google, verbose):
     """Use docstamp to create documents from the content of a CSV file or
@@ -153,7 +155,8 @@ def create(input, template, field, outdir, prefix, otype, command, index,
         file_path = os.path.join(outdir, file_name + '.' + otype)
 
         kwargs = {'file_type': otype,
-                  'dpi': dpi}
+                  'dpi': dpi, 
+                  'support_unicode': True}
 
         log.debug('Rendering file {}.'.format(file_path))
         try:

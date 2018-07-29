@@ -239,6 +239,10 @@ class SVGDocument(TextDocument):
         dpi: int
             Dots-per-inch for the png and pdf.
             Default: 150
+
+        support_unicode: bool
+            Whether to allow unicode to be encoded in the PDF.
+            Default: False
         """
         temp = get_tempfile(suffix='.svg')
         self.save_content(temp.name)
@@ -251,7 +255,7 @@ class SVGDocument(TextDocument):
             elif file_type == 'png':
                 svg2png(temp.name, file_path, dpi=dpi)
             elif file_type == 'pdf':
-                svg2pdf(temp.name, file_path, dpi=dpi)
+                svg2pdf(temp.name, file_path, dpi=dpi, support_unicode=support_unicode)
         except:
             log.exception(
                 'Error exporting file {} to {}'.format(file_path, file_type)
