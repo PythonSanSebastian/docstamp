@@ -5,7 +5,7 @@ Version 0.4.0 by Haseeb Majid
 -------------
 - Added support for unicode in PDFs.
 - Fixed small typos.
-- Removed 
+- Removed `flag_value` from click.options. 
 
 Version 0.3.5
 -------------

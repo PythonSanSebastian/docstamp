@@ -64,7 +64,7 @@ def cli():
 @click.option('-u', '--unicode_support', is_flag=True, default=False,
               help='Allows unicode characters to be correctly encoded in the PDF.')
 def create(input, template, field, outdir, prefix, otype, command, index,
-           dpi, google, verbose):
+           dpi, google, verbose, unicode_support):
     """Use docstamp to create documents from the content of a CSV file or
     a Google Spreadsheet.
 
@@ -156,7 +156,7 @@ def create(input, template, field, outdir, prefix, otype, command, index,
 
         kwargs = {'file_type': otype,
                   'dpi': dpi, 
-                  'support_unicode': True}
+                  'support_unicode': unicode_support}
 
         log.debug('Rendering file {}.'.format(file_path))
         try:
