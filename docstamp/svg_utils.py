@@ -1,6 +1,7 @@
 """
 Function helpers to do stuff on svg files.
 """
+from docstamp.commands import call_command
 import svgutils.transform as sg
 
 
@@ -94,3 +95,38 @@ def merge_svg_files(svg_file1, svg_file2, x_coord, y_coord, scale=1):
     svg2_root.moveto(x_coord, y_coord, scale=scale)
 
     return svg1
+
+
+
+def rsvg_export(input_file, output_file, dpi=90, rsvg_binpath=None):
+    """ Calls the `rsvg-convert` command, to convert a svg to a PDF (with unicode).
+
+    Parameters
+    ----------
+
+    rsvg_binpath: str
+        Path to `rsvg-convert` command
+
+    input_file: str
+        Path to the input file
+
+    output_file: str
+        Path to the output file
+
+    Returns
+    -------
+    return_value
+        Command call return value
+
+    """
+    if not os.path.exists(input_file):
+        log.error('File {} not found.'.format(input_file))
+        raise IOError((0, 'File not found.', input_file))
+
+    args_strings = []
+    args_strings += ["-f pdf"]
+    args_strings += ["-o {} {}".format(input_file, output_file)]
+    args_strings += ["--dpi-x {}".format(dpi)]
+    args_strings += ["--dpi-y {}".format(dpi)]
+
+    return call_command(rsvg_binpath, args_strings)

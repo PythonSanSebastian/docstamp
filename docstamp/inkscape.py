@@ -13,6 +13,7 @@ import logging
 
 from docstamp.config import get_inkscape_binpath
 from docstamp.commands import call_command
+from docstamp.svg_utils import rsvg_export
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def call_inkscape(args_strings, inkscape_binpath=None):
 
 
 def inkscape_export(input_file, output_file, export_flag="-A", dpi=90, inkscape_binpath=None):
-    """ Call Inkscape to export the input_file to outpu_file using the
+    """ Call Inkscape to export the input_file to output_file using the
     specific export argument flag for the output file type.
 
     Parameters
@@ -83,11 +84,16 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90, inkscape_
     return call_inkscape(arg_strings, inkscape_binpath=inkscape_binpath)
 
 
-def svg2pdf(svg_file_path, pdf_file_path, dpi=150, inkscape_binpath=None):
+def svg2pdf(svg_file_path, pdf_file_path, dpi=150, command_binpath=None, support_unicode=False):
     """ Transform SVG file to PDF file
     """
+
+    if support_unicode:
+        return rsvg_export(svg_file_path, pdf_file_path, dpi=dpi, rsvg_binpath=command_binpath)
+
+
     return inkscape_export(svg_file_path, pdf_file_path, export_flag="-A",
-                           dpi=dpi, inkscape_binpath=inkscape_binpath)
+                           dpi=dpi, inkscape_binpath=command_binpath)
 
 
 def svg2png(svg_file_path, png_file_path, dpi=150, inkscape_binpath=None):
