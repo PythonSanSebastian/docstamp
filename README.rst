@@ -73,5 +73,5 @@ Contributors
 ------------
 
 Oier Etxaniz @oechaniz
-
 Luis Javier Salvatierra @ljsalvatierra
+Haseeb Majid

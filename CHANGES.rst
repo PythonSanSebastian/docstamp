@@ -1,11 +1,16 @@
 Changelog
 =========
 
+Version 0.4.1
+-------------
+- Fixed bugs in unicode support.
+- Removed support for Google spreadsheets
+
 Version 0.4.0 by Haseeb Majid
 -------------
 - Added support for unicode in PDFs.
 - Fixed small typos.
-- Removed `flag_value` from click.options. 
+- Removed `flag_value` from click.options.
 
 Version 0.3.5
 -------------
