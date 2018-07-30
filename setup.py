@@ -3,9 +3,7 @@
 
 from __future__ import print_function
 
-import os
 import io
-import sys
 from setuptools import setup, find_packages
 
 
@@ -20,22 +18,14 @@ def read(*filenames, **kwargs):
     return sep.join(buf)
 
 
-# Get version without importing, which avoids dependency issues
-module_name = find_packages(exclude=['tests'])[0]
-version_pyfile = os.path.join(module_name, 'version.py')
-exec(compile(read(version_pyfile), version_pyfile, 'exec'))
-
-LICENSE = 'new BSD'
-
 setup_dict = dict(
-    name=module_name,
-    version=__version__,
+    name="docstamp",
+    version="0.4.0",
     url="https://github.com/PythonSanSebastian/docstamp.git",
 
     description="A SVG and LateX template renderer from table data based on Inkscape and Jinja2.",
 
-    license=LICENSE,
-
+    license='new BSD',
     author='Alexandre M. Savio',
     author_email='alexsavio@gmail.com',
     maintainer='Alexandre M. Savio',
@@ -62,7 +52,6 @@ setup_dict = dict(
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
