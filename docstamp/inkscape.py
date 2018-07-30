@@ -71,7 +71,7 @@ def inkscape_export(input_file, output_file, export_flag="-A", dpi=90, inkscape_
         log.error('File {} not found.'.format(input_file))
         raise IOError((0, 'File not found.', input_file))
 
-    if not '=' in export_flag:
+    if '=' not in export_flag:
         export_flag += ' '
 
     arg_strings = []
@@ -90,7 +90,6 @@ def svg2pdf(svg_file_path, pdf_file_path, dpi=150, command_binpath=None, support
 
     if support_unicode:
         return rsvg_export(svg_file_path, pdf_file_path, dpi=dpi, rsvg_binpath=command_binpath)
-
 
     return inkscape_export(svg_file_path, pdf_file_path, export_flag="-A",
                            dpi=dpi, inkscape_binpath=command_binpath)

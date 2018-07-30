@@ -12,7 +12,7 @@ import os
 import shutil
 import logging
 
-from docstamp.commands import call_command, simple_call, check_command
+from docstamp.commands import simple_call, check_command
 from docstamp.file_utils import remove_ext, cleanup
 
 log = logging.getLogger(__name__)
@@ -57,7 +57,6 @@ def tex2pdf(tex_file, output_file=None, output_format='pdf'):
     args_strings += ['"' + tex_file + '"']
 
     log.debug('Calling command {} with args: {}.'.format(cmd_name, args_strings))
-    # ret = call_command(cmd_name, args_strings)
     ret = simple_call(args_strings)
 
     result_file = os.path.join(result_dir, remove_ext(os.path.basename(tex_file)) + '.' + output_format)
@@ -113,7 +112,6 @@ def xetex2pdf(tex_file, output_file=None, output_format='pdf'):
     args_strings += ['"' + tex_file + '"']
 
     log.debug('Calling command {} with args: {}.'.format(cmd_name, args_strings))
-    # ret = call_command(cmd_name, args_strings)
     ret = simple_call(args_strings)
 
     result_file = os.path.join(result_dir, remove_ext(os.path.basename(tex_file)) + '.pdf')

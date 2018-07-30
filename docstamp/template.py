@@ -249,6 +249,7 @@ class SVGDocument(TextDocument):
 
         file_type = kwargs.get('file_type', 'pdf')
         dpi = kwargs.get('dpi', 150)
+        support_unicode = kwargs.get('support_unicode', False)
         try:
             if file_type == 'svg':
                 shutil.copyfile(temp.name, file_path)

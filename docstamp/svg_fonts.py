@@ -134,4 +134,4 @@ def embed_font_to_svg(filepath, outfile, font_files):
         List of paths to .ttf or .otf files.
     """
     tree = _embed_font_to_svg(filepath, font_files)
-    tree.write(out_path, encoding='utf-8', pretty_print=True)
+    tree.write(outfile, encoding='utf-8', pretty_print=True)

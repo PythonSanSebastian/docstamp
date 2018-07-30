@@ -2,10 +2,10 @@
 """
 Utilities for the CLI functions.
 """
-import os.path as path
 import re
 import json
 import logging
+from csv import DictReader
 
 import click
 
@@ -52,12 +52,6 @@ def echo_list(alist):
 def get_items_from_csv(csv_filepath):
     # CSV to JSON
     # one JSON object for each item
-    import sys
-    if sys.version_info >= (3, 0):
-        from csv import DictReader
-    else:
-        from ..unicode_csv import UnicodeReader as DictReader
-
     items = {}
     with open(str(csv_filepath), 'r') as csvfile:
 

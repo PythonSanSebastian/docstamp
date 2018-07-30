@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import os.path as op
 import base64
 import argparse
 import logging
@@ -35,12 +34,12 @@ def get_base64_encoding(bin_filepath):
 
 def remove_ext(filepath):
     """Return the basename of filepath without extension."""
-    return op.basename(filepath).split('.')[0]
+    return os.path.basename(filepath).split('.')[0]
 
 
 def get_ext(filepath):
     """Return file extension"""
-    return op.basename(filepath).split('.')[-1]
+    return os.path.basename(filepath).split('.')[-1]
 
 
 class FontFace(object):
@@ -79,7 +78,7 @@ class FontFace(object):
 
     @property
     def css_text(self):
-        css_text  = u"@font-face{\n"
+        css_text = u"@font-face{\n"
         css_text += u"font-family: " + self.name + ";\n"
         css_text += u"src: url(data:font/" + self.ext + ";"
         css_text += u"base64," + self.base64 + ") "
@@ -95,7 +94,7 @@ class FontFaceGroup(object):
 
     @property
     def css_text(self):
-        css_text  = u'<style type="text/css">'
+        css_text = u'<style type="text/css">'
         for ff in self.fontfaces:
             css_text += ff.css_text
         css_text += u'</style>'
@@ -126,30 +125,30 @@ if __name__ == '__main__':
     fonts = args.fonts
     out_path = args.out_path
 
-    #check where to write the stuff
+    # check where to write the stuff
     stdout = False
     raw_write = False
     if not svg_filepath:
         raw_write = True
-    elif not op.exists(svg_filepath):
-        log.error('Could not find file: {}'.format(ipynbf))
+    elif not os.path.exists(svg_filepath):
+        log.error('Could not find file: {}'.format(svg_filepath))
         exit(-1)
 
     if not out_path:
         raw_write = True
         stdout = True
 
-    #check if user gave any font
+    # check if user gave any font
     if not fonts:
         log.error('No fonts given.')
         exit(-1)
 
-    #build the stuff to write
+    # build the stuff to write
     fontfaces = FontFaceGroup()
     for font_path in fonts:
         fontfaces.append(FontFace(font_path))
 
-    #write the stuff
+    # write the stuff
     if raw_write and stdout:
         print(fontfaces.css_text)
         exit(0)
