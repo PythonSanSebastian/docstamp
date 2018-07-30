@@ -8,15 +8,13 @@ import logging
 from docstamp.file_utils import get_extension
 from docstamp.template import TextDocument
 from docstamp.config import LOGGING_LVL
-from docstamp.data_source import GoogleData
 
 from docstamp.cli.utils import (
     CONTEXT_SETTINGS,
     verbose_switch,
     get_items_from_csv,
     ExistingFilePath,
-    DirPath,
-    check_not_none,
+    DirPath
 )
 
 ACCEPTED_DOCS = "Inkscape (.svg), PDFLatex (.tex), XeLatex (.tex)"
@@ -57,14 +55,12 @@ def cli():
                    'document from. Note that the samples numbers start from 0 '
                    'and the empty ones do not count.')
 @click.option('--dpi', type=int, default=150, help='Output file resolution')
-@click.option('-g', '--google', is_flag=True, 
-              help='Fetch data from Google Drive')
-@click.option('-v', '--verbose', is_flag=True, 
+@click.option('-v', '--verbose', is_flag=True,
               help='Output debug logs.')
 @click.option('-u', '--unicode_support', is_flag=True, default=False,
               help='Allows unicode characters to be correctly encoded in the PDF.')
 def create(input, template, field, outdir, prefix, otype, command, index,
-           dpi, google, verbose, unicode_support):
+           dpi, verbose, unicode_support):
     """Use docstamp to create documents from the content of a CSV file or
     a Google Spreadsheet.
 
@@ -78,12 +74,7 @@ def create(input, template, field, outdir, prefix, otype, command, index,
     # setup verbose mode
     verbose_switch(verbose)
 
-    # check from where the input comes from
-    if google:
-        input_file = Google_data.getCSV()
-    else:
-        input_file = input
-
+    input_file = input
     fields = field
 
     # init set of template contents
@@ -155,7 +146,7 @@ def create(input, template, field, outdir, prefix, otype, command, index,
         file_path = os.path.join(outdir, file_name + '.' + otype)
 
         kwargs = {'file_type': otype,
-                  'dpi': dpi, 
+                  'dpi': dpi,
                   'support_unicode': unicode_support}
 
         log.debug('Rendering file {}.'.format(file_path))
