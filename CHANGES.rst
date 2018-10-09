@@ -1,10 +1,14 @@
 Changelog
 =========
 
+Version 0.4.2 (09.10.2018)
+--------------------------
+- Fixed bug to find the default path to `rsvg-convert`.
+
 Version 0.4.1
 -------------
 - Fixed bugs in unicode support.
-- Removed support for Google spreadsheets
+- Removed support for Google spreadsheets.
 
 Version 0.4.0 by Haseeb Majid
 -------------
