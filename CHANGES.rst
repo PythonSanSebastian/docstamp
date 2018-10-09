@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.3 (10.10.2018)
+--------------------------
+- Fixed bug to correctly call `rsvg-convert`.
+
+
 Version 0.4.2 (09.10.2018)
 --------------------------
 - Fixed bug to find the default path to `rsvg-convert`.
