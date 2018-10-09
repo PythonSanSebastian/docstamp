@@ -3,6 +3,8 @@ Function helpers to manage PDF files.
 """
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
+from docstamp.commands import call_command
+
 
 def merge_pdfs(pdf_filepaths, out_filepath):
     """ Merge all the PDF files in `pdf_filepaths` in a new PDF file `out_filepath`.
@@ -27,3 +29,11 @@ def merge_pdfs(pdf_filepaths, out_filepath):
     merger.write(out_filepath)
 
     return out_filepath
+
+
+def pdf_to_cmyk(input_file: str, output_file: str):
+    cmd_args = '-dSAFER -dBATCH -dNOPAUSE -dNOCACHE -sDEVICE=pdfwrite ' \
+        '-sColorConversionStrategy=CMYK ' \
+        '-dProcessColorModel=/DeviceCMYK ' \
+        '-sOutputFile="{}" "{}"'.format(output_file, input_file)
+    call_command('gs', cmd_args)
