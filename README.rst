@@ -24,8 +24,7 @@ It is PDF centric, however it can also export in some cases to PNG.
 
 It needs:
 
-- Inkscape for .SVG templates, and
-
+- Inkscape or rsvg-convert for .SVG templates, and
 - PDFLateX or XeLateX for LateX templates.
 
 
@@ -53,6 +52,8 @@ Requirements
 See `requirements.txt` file. Also you will need Inkscape, XeLatex, or PDFLatex
 installed in your system.
 
+For unicode support in SVG exports, you need to install `rsvg-convert`, which is available in `librsvg-bin`.
+
 
 Compatibility
 -------------
@@ -73,5 +74,7 @@ Contributors
 ------------
 
 Oier Etxaniz @oechaniz
+
 Luis Javier Salvatierra @ljsalvatierra
+
 Haseeb Majid
