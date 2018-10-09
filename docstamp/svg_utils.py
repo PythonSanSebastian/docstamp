@@ -4,7 +4,7 @@ Function helpers to do stuff on svg files.
 import os
 import logging
 
-from docstamp.commands import call_command
+from docstamp.commands import call_command, which
 import svgutils.transform as sg
 
 log = logging.getLogger(__name__)
@@ -23,11 +23,13 @@ def replace_chars_for_svg_code(svg_content):
         Corrected SVG content
     """
     result = svg_content
-    svg_char = [('&', '&amp;'),
-                ('>', '&gt;'),
-                ('<', '&lt;'),
-                ('"', '&quot;'),
-                ]
+    svg_char = [
+        ('&', '&amp;'),
+        ('>', '&gt;'),
+        ('<', '&lt;'),
+        ('"', '&quot;'),
+    ]
+
     for c, entity in svg_char:
         result = result.replace(c, entity)
 
@@ -61,10 +63,11 @@ def _check_svg_file(svg_file):
             raise Exception('Error reading svg file {}.'.format(svg_file)) from exc
         else:
             return svg
-    elif isinstance(svg_file, sg.SVGFigure):
+
+    if isinstance(svg_file, sg.SVGFigure):
         return svg_file
-    else:
-        raise ValueError('Expected `svg_file` to be `str` or `svgutils.SVG`, got {}.'.format(type(svg_file)))
+
+    raise ValueError('Expected `svg_file` to be `str` or `svgutils.SVG`, got {}.'.format(type(svg_file)))
 
 
 def merge_svg_files(svg_file1, svg_file2, x_coord, y_coord, scale=1):
@@ -126,6 +129,9 @@ def rsvg_export(input_file, output_file, dpi=90, rsvg_binpath=None):
     if not os.path.exists(input_file):
         log.error('File {} not found.'.format(input_file))
         raise IOError((0, 'File not found.', input_file))
+
+    if rsvg_binpath is None:
+        rsvg_binpath = which('rsvg-convert')
 
     args_strings = []
     args_strings += ["-f pdf"]
