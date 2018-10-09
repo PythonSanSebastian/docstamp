@@ -4,7 +4,7 @@ Function helpers to do stuff on svg files.
 import os
 import logging
 
-from docstamp.commands import call_command, which
+from docstamp.commands import call_command, which, check_command
 import svgutils.transform as sg
 
 log = logging.getLogger(__name__)
@@ -132,11 +132,13 @@ def rsvg_export(input_file, output_file, dpi=90, rsvg_binpath=None):
 
     if rsvg_binpath is None:
         rsvg_binpath = which('rsvg-convert')
+        check_command(rsvg_binpath)
 
     args_strings = []
     args_strings += ["-f pdf"]
-    args_strings += ["-o {} {}".format(input_file, output_file)]
+    args_strings += ["-o {}".format(output_file)]
     args_strings += ["--dpi-x {}".format(dpi)]
     args_strings += ["--dpi-y {}".format(dpi)]
+    args_strings += [input_file]
 
     return call_command(rsvg_binpath, args_strings)
