@@ -22,7 +22,6 @@ target/
 .installed.cfg
 *.egg
 .venv/
-Pipfile.lock
 .pytest_cache/
 
 # PyInstaller
