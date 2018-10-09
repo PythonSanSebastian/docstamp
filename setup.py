@@ -20,7 +20,7 @@ def read(*filenames, **kwargs):
 
 setup_dict = dict(
     name="docstamp",
-    version="0.4.2",
+    version="0.4.3",
     url="https://github.com/PythonSanSebastian/docstamp.git",
 
     description="A SVG and LateX template renderer from table data based on Inkscape and Jinja2.",
