@@ -31,9 +31,23 @@ def merge_pdfs(pdf_filepaths, out_filepath):
     return out_filepath
 
 
-def pdf_to_cmyk(input_file: str, output_file: str):
-    cmd_args = '-dSAFER -dBATCH -dNOPAUSE -dNOCACHE -sDEVICE=pdfwrite ' \
-        '-sColorConversionStrategy=CMYK ' \
-        '-dProcessColorModel=/DeviceCMYK ' \
-        '-sOutputFile="{}" "{}"'.format(output_file, input_file)
+def pdf_to_cmyk(input_file, output_file):
+    """ User `gs` (Ghostscript) to convert the colore model of a PDF to CMYK.
+
+    Parameters
+    ----------
+    input_file: str
+
+    output_file: str
+    """
+    cmd_args = [
+        '-dSAFER',
+        '-dBATCH',
+        '-dNOPAUSE',
+        '-dNOCACHE',
+        '-sDEVICE=pdfwrite',
+        '-sColorConversionStrategy=CMYK',
+        '-dProcessColorModel=/DeviceCMYK',
+        '-sOutputFile="{}" "{}"'.format(output_file, input_file),
+    ]
     call_command('gs', cmd_args)
