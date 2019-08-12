@@ -1,15 +1,21 @@
+dist: xenial
+
 language: python
 
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
+os:
+  - linux
 
-env:
-  - PIP_USE_MIRRORS=true
+python:
+  - '3.6'
+  - '3.7'
 
 install:
-  - python setup.py install
+  - python -m pip install -U pip setuptools pipenv
+  - python -m pipenv install --dev
+  - python -m pip install -e .
 
 script:
-  - python setup.py test
+  - tox -e lint
+  - tox -e isort
+  - tox -e mypy
+

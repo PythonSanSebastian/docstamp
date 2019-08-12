@@ -7,15 +7,18 @@ name = "pypi"
 "e1839a8" = {editable = true, path = "."}
 
 [dev-packages]
+flake8 = "*"
+flake8-bugbear = "*"
+autopep8 = "*"
+pre-commit = "*"
 pytest = "*"
 pytest-cov = "*"
-pytest-timeout = "*"
-pdbpp = "*"
-better-exceptions = "*"
-"flake8" = "*"
-bumpversion = "*"
+pytest-xdist = "*"
+pytest-only = "*"
+watchdog = "*"
+mypy = "*"
+isort = "*"
+tox = ">=3.13.2"
+rope = "*"
 twine = "*"
-
-
-[requires]
-python_version = "3.6"
+tox-pipenv-install = "*"

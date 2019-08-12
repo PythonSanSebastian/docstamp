@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.4 (12.08.2019)
+--------------------------
+- Fix bug to correctly call `call_command` in `pdf_utls.pdf_to_cmyk`.
+
+
 Version 0.4.3 (10.10.2018)
 --------------------------
 - Fixed bug to correctly call `rsvg-convert`.

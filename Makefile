@@ -1,4 +1,4 @@
-.PHONY: help clean clean-pyc clean-build list test test-dbg test-cov test-all coverage docs release sdist install deps develop tag
+.PHONY: help clean clean-pyc clean-build list test test-dbg test-cov test-all coverage docs release sdist install install-dev tag
 
 project-name = docstamp
 
@@ -19,38 +19,55 @@ help:
 	@echo "release - package and upload a release"
 	@echo "sdist - package"
 	@echo "install - install"
-	@echo "develop - install in development mode"
-	@echo "deps - install dependencies"
+	@echo "install-dev - install in development mode"
 	@echo "tag - create a git tag with current version"
 
-install: deps
-	python setup.py install
+install:
+	python -m pip install .
 
-develop: deps
-	python setup.py develop
+install-ci:
+	python -m pip install pipenv
+	pipenv install --dev
+	python -m pip install -e .
 
-deps:
-	pip install -r requirements.txt
+install-dev: install-ci
+	pre-commit install
 
-clean: clean-build clean-pyc
+clean: clean-build clean-pyc clean-caches
 
 clean-build:
 	rm -fr build/
 	rm -fr dist/
+	rm -fr .eggs/
 	rm -fr *.egg-info
+	rm -fr *.spec
 
 clean-pyc:
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
+	pyclean $(project-name)
 	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -rf {} +
+	find . -name __pycache__ -exec rm -rf {} +
 	find . -name '*.log*' -delete
+	find . -name '*_cache' -exec rm -rf {} +
+	find . -name '*.egg-info' -exec rm -rf {} +
+
+clean-caches:
+	rm -rf .tox
+	rm -rf .pytest_cache
 
 lint:
-	flake8 $(project-name) test
+	tox -e lint
 
 test:
-	py.test
+	tox -e tests
+
+mypy:
+	tox -e mypy
+
+isort-check:
+	tox -e isort
+
+isort:
+	isort -rc $(project-name)/
 
 test-cov:
 	py.test --cov-report term-missing --cov=$(project-name)
@@ -60,20 +77,6 @@ test-dbg:
 
 test-all:
 	tox
-
-coverage:
-	coverage run --source $(project-name) setup.py test
-	coverage report -m
-	coverage html
-	open htmlcov/index.html
-
-docs:
-	rm -f docs/$(project-name).rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ $(project-name)
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	open docs/_build/html/index.html
 
 tag: clean
 	@echo "Creating git tag v$(version)"

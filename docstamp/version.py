@@ -1,5 +1,2 @@
-'''
-Unique version information place
-'''
-__version__ = '0.4.3'
-VERSION = tuple(int(x) for x in __version__.split('.'))
+"""Release version number."""
+__version__ = '0.4.3'  # noqa
