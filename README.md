@@ -3,10 +3,8 @@
 [![](https://img.shields.io/badge/python-3.6-blue.svg)](https://badge.fury.io/py/docstamp)
 [![](https://badge.fury.io/py/docstamp.svg)](https://badge.fury.io/py/docstamp)
 
-
-Initially it was a conference badge creator based on SVG templates
-(https://github.com/PythonSanSebastian/pydger), but we thought
-it could be more generic and have many other applications.
+Initially it was a conference badge creator based on SVG templates,
+but we thought it could be more generic and have many other applications.
 
 DocStamp is a generic template renderer which takes the data from a
 .CSV file and creates one rendered template file for each row of the data.
@@ -17,7 +15,6 @@ It needs:
 
 - Inkscape or rsvg-convert for .SVG templates, and
 - PDFLateX or XeLateX for LateX templates.
-
 
 ## CLI Usage
 
@@ -55,9 +52,11 @@ DocStamp is compatible with Python 2 (we wish to believe) and 3.
 We could not test it on Windows.
 
 ## Authors
+
 - Alexandre M. Savio @alexsavio
 
 ## Contributors
+
 - Oier Etxaniz @oechaniz
 - Luis Javier Salvatierra @ljsalvatierra
 - Haseeb Majid
