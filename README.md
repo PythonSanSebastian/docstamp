@@ -2,6 +2,7 @@
 
 [![](https://img.shields.io/badge/python-3.6-blue.svg)](https://badge.fury.io/py/docstamp)
 [![](https://badge.fury.io/py/docstamp.svg)](https://badge.fury.io/py/docstamp)
+[![Build Status](https://travis-ci.org/PythonSanSebastian/docstamp.svg?branch=master)](https://travis-ci.org/PythonSanSebastian/docstamp)
 
 Initially it was a conference badge creator based on SVG templates,
 but we thought it could be more generic and have many other applications.
