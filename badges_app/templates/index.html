@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_name }} - Badge Generator{% endblock %}
+
+{% block content %}
+<div class="container main-container">
+    <div class="header text-center mb-5">
+        <h1 class="display-4">{{ app_name }}</h1>
+    </div>
+
+    <!-- Step 1: Upload SVG Templates -->
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Step 1: Upload SVG Templates & Analyze them</h5>
+        </div>
+        <div class="card-body">
+            <form action="/analyze-svg" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="mb-3">
+                    <label for="svg_files" class="form-label">Select SVG Files</label>
+                    <input class="form-control" type="file" id="svg_files" name="svg_files" accept=".svg" multiple required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Analyze SVG Files</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if results %}
+    <!-- Intermediate: SVG Analysis Results -->
+    <div id="svg-analysis-section" class="mt-5">
+        <h3>SVG Analysis Results & Badge Preview</h3>
+        <p class="text-muted">Below is a summary of required CSV columns based on each uploaded SVG template with badge preview.</p>
+        {% for filename, variables in results.items() %}
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-secondary text-white">
+                <strong>Template: {{ filename }}</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if variables[0] == "Invalid SVG file" %}
+                        <div class="alert alert-danger">Invalid SVG file.</div>
+                        {% elif variables|length == 0 %}
+                        <div class="alert alert-warning">No variables found.</div>
+                        {% else %}
+                        <p>Required CSV columns:</p>
+                        <ul class="list-group">
+                            {% for var in variables %}
+                            <li class="list-group-item"><code>{{ var }}</code></li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <img src="data:image/png;base64,{{ previews[filename] }}" class="img-fluid rounded shadow"
+                            alt="Preview" style="max-height: 400px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Step 2: Upload CSV and Generate Badges -->
+    <div class="card mt-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Step 2: Upload Attendee Data & Generate Badges</h5>
+        </div>
+        <div class="card-body">
+            <form action="/generate-badges" method="post" enctype="multipart/form-data" id="generate-form" class="upload-form">
+                <!-- Hidden field to pass results data -->
+                <input type="hidden" name="svg_analysis_results" value="{{ results }}">
+
+                <div class="mb-3">
+                    <label for="data_files" class="form-label">CSV Attendee Data</label>
+                    <input class="form-control" type="file" id="data_files" name="data_files" accept=".csv" required multiple>
+                </div>
+                <div class="mb-3">
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="output_format"
+                                   id="separate_files" value="separate" checked required>
+                            <label class="form-check-label fw ms-2" for="separate_files">
+                                Get separate PDF files for each badge (ZIP)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="output_format"
+                                   id="merged_pdf" value="merged">
+                            <label class="form-check-label fw ms-2" for="merged_pdf">
+                                Get single PDF with 4 badges per page
+                            </label>
+                        </div>
+                    </div>
+                    <div id="dimensions-section" class="bg-light p-3 rounded">
+                        <h6 class="fw-bold mb-3">Badge Dimensions (cm)</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="badge_width" class="form-label">Width</label>
+                                <input type="number" step="0.1" class="form-control"
+                                       id="badge_width" name="badge_width" value="7.5" min="5" max="10.5">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="badge_height" class="form-label">Height</label>
+                                <input type="number" step="0.1" class="form-control"
+                                       id="badge_height" name="badge_height" value="12" min="5" max="14.85">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                <button type="submit" id="generate-btn" class="btn btn-primary btn-lg generate-btn">
+                    <span id="generate-text">Generate Badges</span>
+                    <span id="generate-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if success %}
+    <div class="alert alert-success text-center">
+        Badges generated successfully!
+        <br>
+        <a href="{{ download_url }}" class="btn btn-success mt-3">Download</a>
+    </div>
+    {% endif %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const separateFiles = document.getElementById('separate_files');
+    const mergedPdf = document.getElementById('merged_pdf');
+    const dimensionsSection = document.getElementById('dimensions-section');
+    const generateForm = document.getElementById('generate-form');
+    const generateBtn = document.getElementById('generate-btn');
+    const generateText = document.getElementById('generate-text');
+    const generateSpinner = document.getElementById('generate-spinner');
+
+    // Initially hide dimensions section if separate files is selected
+    dimensionsSection.style.display = separateFiles.checked ? 'none' : 'block';
+
+    // Add event listeners to radio buttons
+    separateFiles.addEventListener('change', function() {
+        dimensionsSection.style.display = 'none';
+    });
+
+    mergedPdf.addEventListener('change', function() {
+        dimensionsSection.style.display = 'block';
+    });
+
+    // Handle form submission
+    generateForm.addEventListener('submit', function() {
+        // Disable the button and show spinner
+        generateBtn.disabled = true;
+        generateBtn.classList.remove('btn-primary');
+        generateBtn.classList.add('btn-secondary');
+        generateText.textContent = 'Processing...';
+        generateSpinner.classList.remove('d-none');
+    });
+});
+</script>
+{% endblock %}
