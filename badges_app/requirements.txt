@@ -1,0 +1,7 @@
+fastapi==0.83.0
+uvicorn==0.16.0
+jinja2==3.0.3
+docstamp==0.4.5
+python-multipart==0.0.5
+reportlab==3.6.8
+pdf2image==1.17.0
