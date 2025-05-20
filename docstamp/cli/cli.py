@@ -50,7 +50,7 @@ def cli():
               default='inkscape', show_default=True,
               help='The rendering command to be used in case file name '
                    'extension is not specific.')
-@click.option('--index', default=[],
+@click.option('--index', type=int, multiple=True,
               help='Index/es of the CSV file that you want to create the '
                    'document from. Note that the samples numbers start from 0 '
                    'and the empty ones do not count.')
@@ -98,7 +98,7 @@ def create(input, template, field, outdir, prefix, otype, command, index,
 
     # filter the items if index
     if index:
-        myitems = {int(idx): items[int(idx)] for idx in index}
+        myitems = {idx: items[idx] for idx in index}
         items = myitems
         log.debug('Using the elements with index {} of the input '
                   'file.'.format(index))
