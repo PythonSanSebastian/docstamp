@@ -1,128 +1,92 @@
-# coding=utf-8
-# -------------------------------------------------------------------------------
-# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
-# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
-# Universidad del Pais Vasco UPV/EHU
-#
-# 2015, Alexandre Manhaes Savio
-# Use this at your own risk!
-# -------------------------------------------------------------------------------
+"""A module for handling document templates and rendering them."""
 
+from __future__ import annotations
 
 import os
 import shutil
-import logging
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader
 
+from .exceptions import ExportError, RenderingError
+from .file_utils import get_tempfile
 from .inkscape import svg2pdf, svg2png
 from .pdflatex import tex2pdf, xetex2pdf
-from .file_utils import get_tempfile, write_to_file
 from .svg_utils import replace_chars_for_svg_code
 
-log = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from typing import Any, Literal
 
 
-def get_environment_for(file_path):
-    """Return a Jinja2 environment for where file_path is.
-
-    Parameters
-    ----------
-    file_path: str
-
-    Returns
-    -------
-    jinja_env: Jinja2.Environment
-
-    """
-    work_dir = os.path.dirname(os.path.abspath(file_path))
-
-    if not os.path.exists(work_dir):
-        raise IOError('Could not find folder for dirname of file {}.'.format(file_path))
-
-    try:
-        jinja_env = Environment(loader=FileSystemLoader(work_dir))
-    except:
-        raise
-    else:
-        return jinja_env
-
-
-def get_doctype_by_extension(extension):
-    if 'txt' in extension:
+def get_doctype_by_extension(
+    extension: Literal["txt", "svg", "tex"],
+) -> type[TextDocument]:
+    if "txt" in extension:
         doc_type = TextDocument
-    elif 'svg' in extension:
+    elif "svg" in extension:
         doc_type = SVGDocument
-    elif 'tex' in extension:
+    elif "tex" in extension:
         doc_type = LateXDocument
     else:
-        raise ValueError('Could not identify the `doc_type` for `extension` {}.'.format(extension))
-
+        raise ValueError(
+            f"Could not determine the document type for `extension` {extension}."
+        )
     return doc_type
 
 
-def get_doctype_by_command(command):
+def get_doctype_by_command(
+    command: Literal["inkscape", "pdflatex", "xelatex"] | None,
+) -> type[TextDocument]:
     if not command:
         doc_type = TextDocument
-    elif command == 'inkscape':
+    elif command == "inkscape":
         doc_type = SVGDocument
-    elif command == 'pdflatex':
+    elif command == "pdflatex":
         doc_type = PDFLateXDocument
-    elif command == 'xelatex':
+    elif command == "xelatex":
         doc_type = XeLateXDocument
     else:
-        raise ValueError('Could not identify the `doc_type` for `command` {}.'.format(command))
+        raise ValueError(
+            f"Could not determine the document type for `command` {command}."
+        )
 
     return doc_type
 
 
-class TextDocument(object):
-    """ A plain text document model.
+class TextDocument:
+    """A plain text document model.
 
     Parameters
     ----------
     template_file_path: str
         Document template file path.
-
-    doc_contents: dict
-        Dictionary with content values for the template to be filled.
     """
 
-    def __init__(self, template_file_path, doc_contents=None):
-        if not os.path.exists(template_file_path):
-            raise IOError('Could not find template file {}.'.format(template_file_path))
+    def __init__(
+        self,
+        template_file_path: os.PathLike | str,
+    ):
+        self._template_file = Path(template_file_path)
 
-        self._setup_template_file(template_file_path)
+        if not self._template_file.exists():
+            raise FileNotFoundError(
+                f"Could not find template file {template_file_path}."
+            )
 
-        if doc_contents is not None:
-            self.file_content_ = self.fill(doc_contents)
+        self._template_env = Environment(
+            loader=FileSystemLoader(self._template_file.parent),
+            autoescape=False,  # noqa: S701
+        )
+        self.template = self._template_env.get_template(template_file_path.name)
 
-    def _setup_template_file(self, template_file_path):
-        """ Setup self.template
-
-        Parameters
-        ----------
-        template_file_path: str
-            Document template file path.
-        """
-        try:
-            template_file = template_file_path
-            template_env = get_environment_for(template_file_path)
-            template = template_env.get_template(os.path.basename(template_file))
-        except:
-            raise
-        else:
-            self._template_file = template_file
-            self._template_env = template_env
-            self.template = template
-
-    def fill(self, doc_contents):
-        """ Fill the content of the document with the information in doc_contents.
+    def render(self, doc_contents: dict[str, Any] | None = None) -> str:
+        """Render the content of the document with the information in doc_contents.
 
         Parameters
         ----------
-        doc_contents: dict
-            Set of values to set the template document.
+        doc_contents: dict[str, Any]
+            Dictionary with content values for the template to be filled.
 
         Returns
         -------
@@ -130,45 +94,42 @@ class TextDocument(object):
             The content of the document with the template information filled.
         """
         try:
-            filled_doc = self.template.render(**doc_contents)
-        except:
-            log.exception('Error rendering Document '
-                          'for {}.'.format(doc_contents))
-            raise
-        else:
-            self.file_content_ = filled_doc
-            return filled_doc
+            return self.template.render(**doc_contents)
+        except Exception as error:
+            raise RenderingError(
+                f"Error rendering document for {doc_contents}."
+            ) from error
 
-    def save_content(self, file_path, encoding='utf-8'):
-        """ Save the content of the .txt file in a text file.
+    def export(
+        self,
+        file_path: os.PathLike | str,
+        doc_contents: dict[str, Any],
+        encoding: str = "utf-8",
+    ):
+        """Export the rendered document to a file.
 
         Parameters
         ----------
-        file_path: str
+        file_path: Path
             Path to the output file.
+        doc_contents: dict[str, Any]
+            Dictionary with content values for the template to be filled.
+        encoding: str
+            Encoding to use when writing the file. Default is 'utf-8'.
         """
-        if self.file_content_ is None:
-            msg = 'Template content has not been updated. \
-                   Please fill the template before rendering it.'
-            log.exception(msg)
-            raise ValueError(msg)
-
+        rendered_content = self.render(doc_contents=doc_contents)
+        _file_path = Path(file_path)
         try:
-            write_to_file(file_path, content=self.file_content_,
-                          encoding=encoding)
-        except Exception as exc:
-            msg = 'Document of type {} got an error when \
-                   writing content.'.format(self.__class__)
-            log.exception(msg)
-            raise Exception(msg) from exc
-
-    def render(self, file_path, **kwargs):
-        """ See self.save_content """
-        return self.save_content(file_path)
+            _file_path.write_text(
+                rendered_content,
+                encoding=encoding,
+            )
+        except Exception as error:
+            raise ExportError(f"Error exporting document to {file_path}.") from error
 
     @classmethod
-    def from_template_file(cls, template_file_path, command=None):
-        """ Factory function to create a specific document of the
+    def from_template_file(cls, template_file_path: Path, command=None):
+        """Factory function to create a specific document of the
         class given by the `command` or the extension of `template_file_path`.
 
         See get_doctype_by_command and get_doctype_by_extension.
@@ -185,7 +146,7 @@ class TextDocument(object):
 
         """
         # get template file extension
-        ext = os.path.basename(template_file_path).split('.')[-1]
+        ext = template_file_path.suffix.lower().removeprefix(".")
 
         try:
             doc_type = get_doctype_by_command(command)
@@ -198,11 +159,10 @@ class TextDocument(object):
 
 
 class SVGDocument(TextDocument):
-    """ A .svg template document model. See GenericDocument. """
-    _template_file = 'badge_template.svg'
+    """A .svg template document model. See TextDocument."""
 
-    def fill(self, doc_contents):
-        """ Fill the content of the document with the information in doc_contents.
+    def render(self, doc_contents: dict[str, Any]) -> str:
+        """Render the content of the document with the information in doc_contents.
         This is different from the TextDocument fill function, because this will
         check for symbools in the values of `doc_content` and replace them
         to good XML codes before filling the template.
@@ -220,18 +180,31 @@ class SVGDocument(TextDocument):
         for key, content in doc_contents.items():
             doc_contents[key] = replace_chars_for_svg_code(content)
 
-        return super(SVGDocument, self).fill(doc_contents=doc_contents)
+        try:
+            return super().render(doc_contents=doc_contents)
+        except Exception as error:
+            raise RenderingError(
+                f"Error rendering SVG document for {doc_contents}."
+            ) from error
 
-    def render(self, file_path, **kwargs):
-        """ Save the content of the .svg file in the chosen rendered format.
+    def export(
+        self, file_path: os.PathLike | str, doc_contents: dict[str, Any], **kwargs
+    ):
+        """Export the content of the .svg file in the chosen rendered format.
 
         Parameters
         ----------
         file_path: str
             Path to the output file.
 
+        doc_contents: dict[str, Any]
+            Dictionary with content values for the template to be filled.
+
         Kwargs
         ------
+        encoding: str
+            Encoding to use when writing the file. Default is 'utf-8'.
+
         file_type: str
             Choices: 'png', 'pdf', 'svg'
             Default: 'pdf'
@@ -242,49 +215,82 @@ class SVGDocument(TextDocument):
 
         support_unicode: bool
             Whether to allow unicode to be encoded in the PDF.
-            Default: False
+            Default: True
         """
-        temp = get_tempfile(suffix='.svg')
-        self.save_content(temp.name)
-
-        file_type = kwargs.get('file_type', 'pdf')
-        dpi = kwargs.get('dpi', 150)
-        support_unicode = kwargs.get('support_unicode', False)
+        temp = get_tempfile(suffix=".svg")
+        rendered_content = self.render(doc_contents=doc_contents)
+        _file_path = Path(file_path)
         try:
-            if file_type == 'svg':
-                shutil.copyfile(temp.name, file_path)
-            elif file_type == 'png':
-                svg2png(temp.name, file_path, dpi=dpi)
-            elif file_type == 'pdf':
-                svg2pdf(temp.name, file_path, dpi=dpi, support_unicode=support_unicode)
-        except:
-            log.exception(
-                'Error exporting file {} to {}'.format(file_path, file_type)
+            _file_path.write_text(
+                rendered_content,
+                encoding=kwargs.get("encoding", "utf-8"),
             )
-            raise
+        except Exception as error:
+            raise ExportError(
+                f"Error exporting SVG document to {file_path}."
+            ) from error
+
+        file_type = kwargs.get("file_type", "pdf")
+        dpi = kwargs.get("dpi", 150)
+        support_unicode = kwargs.get("support_unicode", True)
+        try:
+            if file_type == "svg":
+                shutil.copyfile(src=temp.name, dst=file_path)
+            elif file_type == "png":
+                svg2png(svg_file_path=temp.name, png_file_path=file_path, dpi=dpi)
+            elif file_type == "pdf":
+                svg2pdf(
+                    svg_file_path=temp.name,
+                    pdf_file_path=file_path,
+                    dpi=dpi,
+                    support_unicode=support_unicode,
+                )
+        except Exception as e:
+            raise RenderingError(
+                f"Error exporting file {file_path} to {file_type}."
+            ) from e
 
 
 class LateXDocument(TextDocument):
-    """ A .tex template document model. See GenericDocument. """
+    """A .tex template document model. See GenericDocument."""
 
-    _render_function = staticmethod(tex2pdf)
+    _export = staticmethod(tex2pdf)
 
-    def render(self, file_path, **kwargs):
-        """ Save the content of the .text file in the PDF.
+    def export(
+        self, file_path: os.PathLike | str, doc_contents: dict[str, Any], **kwargs
+    ):
+        """Export the content of the .tex file in the PDF.
 
         Parameters
         ----------
         file_path: str
             Path to the output file.
+
+        doc_contents: dict[str, Any]
+            Dictionary with content values for the template to be filled.
+
+        Kwargs
+        ------
+        encoding: str
+            Encoding to use when writing the file. Default is 'utf-8'.
         """
-        temp = get_tempfile(suffix='.tex')
-        self.save_content(temp.name)
+        temp = get_tempfile(suffix=".tex")
+        rendered_content = self.render(doc_contents=doc_contents)
+        _file_path = Path(file_path)
+        try:
+            file_path.write_text(
+                rendered_content,
+                encoding=kwargs.get("encoding", "utf-8"),
+            )
+        except Exception as error:
+            raise ExportError(
+                f"Error exporting TeX document to {file_path}."
+            ) from error
 
         try:
-            self._render_function(temp.name, file_path, output_format='pdf')
-        except:
-            log.exception('Error exporting file {} to PDF.'.format(file_path))
-            raise
+            self._export(temp.name, file_path, output_format="pdf")
+        except Exception as error:
+            raise ExportError(f"Error exporting file {file_path} to PDF.") from error
 
 
 class PDFLateXDocument(LateXDocument):
@@ -292,4 +298,4 @@ class PDFLateXDocument(LateXDocument):
 
 
 class XeLateXDocument(LateXDocument):
-    _render_function = staticmethod(xetex2pdf)
+    _export = staticmethod(xetex2pdf)

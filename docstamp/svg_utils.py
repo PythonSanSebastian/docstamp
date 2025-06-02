@@ -1,17 +1,18 @@
-"""
-Function helpers to do stuff on svg files.
-"""
-import os
-import logging
+"""Function helpers to do stuff on svg files."""
 
-from docstamp.commands import call_command, which, check_command
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+import svgutils
 import svgutils.transform as sg
 
-log = logging.getLogger(__name__)
+from docstamp.commands import call_command, check_command, which
 
 
-def replace_chars_for_svg_code(svg_content):
-    """ Replace known special characters to SVG code.
+def replace_chars_for_svg_code(svg_content: str) -> str:
+    """Replace known special characters to SVG code.
 
     Parameters
     ----------
@@ -24,10 +25,10 @@ def replace_chars_for_svg_code(svg_content):
     """
     result = svg_content
     svg_char = [
-        ('&', '&amp;'),
-        ('>', '&gt;'),
-        ('<', '&lt;'),
-        ('"', '&quot;'),
+        ("&", "&amp;"),
+        (">", "&gt;"),
+        ("<", "&lt;"),
+        ('"', "&quot;"),
     ]
 
     for c, entity in svg_char:
@@ -36,8 +37,8 @@ def replace_chars_for_svg_code(svg_content):
     return result
 
 
-def _check_svg_file(svg_file):
-    """ Try to read a SVG file if `svg_file` is a string.
+def _check_svg_file(svg_file: str | svgutils.SVGFigure) -> svgutils.SVGFigure:
+    """Try to read a SVG file if `svg_file` is a string.
     Raise an exception in case of error or return the svg object.
 
     If `svg_file` is a svgutils svg object, will just return it.
@@ -58,20 +59,26 @@ def _check_svg_file(svg_file):
     """
     if isinstance(svg_file, str):
         try:
-            svg = sg.fromfile(svg_file)
+            return sg.fromfile(svg_file)
         except Exception as exc:
-            raise Exception('Error reading svg file {}.'.format(svg_file)) from exc
-        else:
-            return svg
+            raise ValueError(f"Error reading svg file {svg_file}.") from exc
 
     if isinstance(svg_file, sg.SVGFigure):
         return svg_file
 
-    raise ValueError('Expected `svg_file` to be `str` or `svgutils.SVG`, got {}.'.format(type(svg_file)))
+    raise ValueError(
+        f"Expected `svg_file` to be `str` or `svgutils.SVG`, got {type(svg_file)}."
+    )
 
 
-def merge_svg_files(svg_file1, svg_file2, x_coord, y_coord, scale=1):
-    """ Merge `svg_file2` in `svg_file1` in the given positions `x_coord`, `y_coord` and `scale`.
+def merge_svg_files(
+    svg_file1: str | svgutils.SVGFigure,
+    svg_file2: str | svgutils.SVGFigure,
+    x_coord: float,
+    y_coord: float,
+    scale: float = 1,
+) -> svgutils.SVGFigure:
+    """Merge `svg_file2` in `svg_file1` in the given positions `x_coord`, `y_coord` and `scale`.
 
     Parameters
     ----------
@@ -94,25 +101,26 @@ def merge_svg_files(svg_file1, svg_file2, x_coord, y_coord, scale=1):
     -------
     `svg1` svgutils object with the content of 'svg_file2'
     """
-    svg1 = _check_svg_file(svg_file1)
-    svg2 = _check_svg_file(svg_file2)
+    svg1 = _check_svg_file(svg_file=svg_file1)
+    svg2 = _check_svg_file(svg_file=svg_file2)
 
     svg2_root = svg2.getroot()
     svg1.append([svg2_root])
-
     svg2_root.moveto(x_coord, y_coord, scale=scale)
 
     return svg1
 
 
-def rsvg_export(input_file, output_file, dpi=90, rsvg_binpath=None):
-    """ Calls the `rsvg-convert` command, to convert a svg to a PDF (with unicode).
+def rsvg_export(
+    input_file: os.PathLike | str,
+    output_file: str | Path,
+    dpi: int = 90,
+    rsvg_binpath: str | None = None,
+):
+    """Calls the `rsvg-convert` command, to convert a svg to a PDF (with unicode).
 
     Parameters
     ----------
-
-    rsvg_binpath: str
-        Path to `rsvg-convert` command
 
     input_file: str
         Path to the input file
@@ -120,25 +128,31 @@ def rsvg_export(input_file, output_file, dpi=90, rsvg_binpath=None):
     output_file: str
         Path to the output file
 
+    dpi: int
+        Dots per inch for the output file. Default is 90.
+
+    rsvg_binpath: str
+        Path to `rsvg-convert` command
+
     Returns
     -------
     return_value
         Command call return value
-
     """
-    if not os.path.exists(input_file):
-        log.error('File {} not found.'.format(input_file))
-        raise IOError((0, 'File not found.', input_file))
+    _input_file = Path(input_file)
+    if not input_file.exists():
+        raise FileNotFoundError(f"File {input_file} not found.")
 
     if rsvg_binpath is None:
-        rsvg_binpath = which('rsvg-convert')
-        check_command(rsvg_binpath)
+        rsvg_binpath = which(cmd_name="rsvg-convert")
+        check_command(cmd_name=rsvg_binpath)
 
-    args_strings = []
-    args_strings += ["-f pdf"]
-    args_strings += ["-o {}".format(output_file)]
-    args_strings += ["--dpi-x {}".format(dpi)]
-    args_strings += ["--dpi-y {}".format(dpi)]
-    args_strings += [input_file]
+    args_strings = [
+        "-f pdf",
+        f"-o {output_file}",
+        f"--dpi-x {dpi}",
+        f"--dpi-y {dpi}",
+        input_file,
+    ]
 
-    return call_command(rsvg_binpath, args_strings)
+    return call_command(cmd_name=rsvg_binpath, args_strings=args_strings)

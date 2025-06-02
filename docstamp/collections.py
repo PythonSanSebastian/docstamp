@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pickle
 
 
@@ -10,8 +8,7 @@ class Enum(set):
         raise AttributeError
 
 
-class ItemSet(object):
-
+class ItemSet:
     def __iter__(self):
         return self.items.__iter__()
 
@@ -22,20 +19,20 @@ class ItemSet(object):
         return self.items.next()
 
     def __getitem__(self, item):
-        if hasattr(self.items, '__getitem__'):
+        if hasattr(self.items, "__getitem__"):
             return self.items[item]
         else:
-            raise AttributeError('Item set has no __getitem__ implemented.')
+            raise AttributeError("Item set has no __getitem__ implemented.")
 
     def __len__(self):
         return len(self.items)
 
     def save(self, file_path):
-        with open(file_path, 'wb'):
+        with open(file_path, "wb"):
             pickle.dump(self.__dict__, file_path, pickle.HIGHEST_PROTOCOL)
 
     def load_from_pickle(self, file_path):
-        with open(file_path, 'rb'):
+        with open(file_path, "rb"):
             adict = pickle.load(file_path)
             pickle.dump(self.__dict__, file_path, pickle.HIGHEST_PROTOCOL)
         self.__dict__.update(adict)

@@ -1,104 +1,141 @@
-# coding=utf-8
-# -------------------------------------------------------------------------------
-# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
-# Asociación Python San Sebastián (ACPySS)
-#
-# 2017, Alexandre Manhaes Savio
-# Use this at your own risk!
-# -------------------------------------------------------------------------------
+"""SVG font embedding helpers."""
 
+from __future__ import annotations
 
-import os
 import base64
+import os
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from lxml import etree
 
 from .file_utils import get_extension
 
-FONT_TYPES = {'ttf': 'truetype',
-              'otf': 'opentype'}
+if TYPE_CHECKING:
+    from typing import Literal
 
 
-def get_base64_encoding(bin_filepath):
+FONT_TYPES = {"ttf": "truetype", "otf": "opentype"}
+
+
+def get_base64_encoding(bin_filepath: os.PathLike | str) -> bytes:
     """Return the base64 encoding of the given binary file"""
-    return base64.b64encode(open(bin_filepath, 'r').read())
+    _bin_filepath = Path(bin_filepath)
+    return base64.b64encode(_bin_filepath.open().read())
 
 
-def remove_ext(filepath):
+def remove_ext(filepath: os.PathLike | str) -> str:
     """Return the basename of filepath without extension."""
-    return os.path.basename(filepath).split('.')[0]
+    _filepath = Path(filepath)
+    return _filepath.name.split(".")[0]
 
 
-class FontFace(object):
-    """CSS font-face object"""
+class FontFace:
+    """CSS font-face object
 
-    def __init__(self, filepath, fonttype=None, name=None):
-        self.filepath = filepath
+    Represents a font-face object that can be used in CSS.
+    It contains the font file path, font type, name, and provides
+    methods to generate the CSS text for embedding the font in a web page.
+
+    Parameters
+    ----------
+    filepath: str or Path
+        The path to the font file (e.g., .ttf or .otf).
+
+    fonttype: str, optional
+        The type of the font (e.g., 'truetype' or 'opentype').
+        If not provided, it will be inferred from the file extension.
+
+    name: str, optional
+        The name of the font. If not provided, it will be derived
+        from the file name without extension.
+    """
+
+    def __init__(
+        self,
+        filepath: os.PathLike | str,
+        fonttype: Literal["ttf", "otf"] | None = None,
+        name: str | None = None,
+    ):
+        self.filepath = Path(filepath)
         self.ftype = fonttype
         self.given_name = name
 
     @classmethod
-    def from_file(cls, filepath):
+    def from_file(cls, filepath: os.PathLike | str) -> FontFace:
+        """Create a FontFace instance from a file path."""
         return cls(filepath)
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """Return the name of the font."""
         if self.given_name is None:
-            return remove_ext(self.filepath)
+            return remove_ext(filepath=self.filepath)
         else:
             return self.given_name
 
     @property
-    def base64(self):
-        return get_base64_encoding(self.filepath)
+    def base64(self) -> bytes:
+        """Return the base64 encoding of the font file."""
+        return get_base64_encoding(bin_filepath=self.filepath)
 
     @property
-    def fonttype(self):
+    def fonttype(self) -> Literal["truetype", "opentype"]:
+        """Return the font type based on the file extension."""
         if self.ftype is None:
-            return FONT_TYPES[get_extension(self.filepath)]
+            return FONT_TYPES[get_extension(filepath=self.filepath)]
         else:
             return self.ftype
 
     @property
-    def ext(self):
-        return get_extension(self.filepath)
+    def ext(self) -> str:
+        """Return the file extension of the font file."""
+        return get_extension(filepath=self.filepath)
 
     @property
-    def css_text(self):
-        css_text = u"@font-face{\n"
-        css_text += u"font-family: " + self.name + ";\n"
-        css_text += u"src: url(data:font/" + self.ext + ";"
-        css_text += u"base64," + self.base64 + ") "
-        css_text += u"format('" + self.fonttype + "');\n}\n"
+    def css_text(self) -> str:
+        """Return the CSS text for embedding the font."""
+        css_text = "@font-face{\n"
+        css_text += "font-family: " + self.name + ";\n"
+        css_text += "src: url(data:font/" + self.ext + ";"
+        css_text += "base64," + self.base64 + ") "
+        css_text += "format('" + self.fonttype + "');\n}\n"
         return css_text
 
 
-class FontFaceGroup(object):
+class FontFaceGroup:
     """Group of FontFaces"""
 
-    def __init__(self):
-        self.fontfaces = []
+    def __init__(self, fontfaces: list[FontFace] | None = None):
+        self.fontfaces: list[FontFace] = fontfaces or []
 
     @property
-    def css_text(self):
-        css_text = u'<style type="text/css">'
+    def css_text(self) -> str:
+        """Return the CSS text for all font faces in the group."""
+        css_text = '<style type="text/css">'
         for ff in self.fontfaces:
             css_text += ff.css_text
-        css_text += u'</style>'
+        css_text += "</style>"
         return css_text
 
     @property
-    def xml_elem(self):
+    def xml_elem(self) -> etree.Element:
+        """Return the XML element for the CSS text."""
         return etree.fromstring(self.css_text)
 
-    def append(self, font_face):
+    def append(self, font_face) -> None:
+        """Append a FontFace to the group."""
         self.fontfaces.append(font_face)
 
 
-def _embed_font_to_svg(filepath, font_files):
-    """ Return the ElementTree of the SVG content in `filepath`
+def _embed_font_to_svg(
+    filepath: os.PathLike | str, font_files: list[os.PathLike | str] | None = None
+) -> etree.ElementTree:
+    """Return the ElementTree of the SVG content in `filepath`
     with the font content embedded.
     """
-    with open(filepath, 'r') as svgf:
+    _filepath = Path(filepath)
+    with _filepath.open() as svgf:
         tree = etree.parse(svgf)
 
     if not font_files:
@@ -109,7 +146,7 @@ def _embed_font_to_svg(filepath, font_files):
         fontfaces.append(FontFace(font_file))
 
     for element in tree.iter():
-        if element.tag.split("}")[1] == 'svg':
+        if element.tag.split("}")[1] == "svg":
             break
 
     element.insert(0, fontfaces.xml_elem)
@@ -117,8 +154,12 @@ def _embed_font_to_svg(filepath, font_files):
     return tree
 
 
-def embed_font_to_svg(filepath, outfile, font_files):
-    """ Write ttf and otf font content from `font_files`
+def embed_font_to_svg(
+    filepath: os.PathLike | str,
+    outfile: os.PathLike | str,
+    font_files: list[os.PathLike | str] | None = None,
+) -> None:
+    """Write ttf and otf font content from `font_files`
     in the svg file in `filepath` and write the result in
     `outfile`.
 
@@ -133,5 +174,5 @@ def embed_font_to_svg(filepath, outfile, font_files):
     font_files: iterable of str
         List of paths to .ttf or .otf files.
     """
-    tree = _embed_font_to_svg(filepath, font_files)
-    tree.write(outfile, encoding='utf-8', pretty_print=True)
+    tree = _embed_font_to_svg(filepath=filepath, font_files=font_files)
+    tree.write(outfile, encoding="utf-8", pretty_print=True)

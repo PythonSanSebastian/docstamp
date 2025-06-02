@@ -1,4 +1,3 @@
-# coding=utf-8
 # -------------------------------------------------------------------------------
 # Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
 # Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
@@ -8,18 +7,18 @@
 # Use this at your own risk!
 # -------------------------------------------------------------------------------
 
-import os
-import sys
-import shutil
 import logging
+import os
+import shutil
 import subprocess
+import sys
 from subprocess import CalledProcessError
 
 log = logging.getLogger(__name__)
 
 
 def simple_call(cmd_args):
-    return subprocess.call(' '.join(cmd_args), shell=True)
+    return subprocess.call(" ".join(cmd_args), shell=True)
 
 
 def is_exe(fpath):
@@ -66,11 +65,11 @@ def which_py2(cmd_name):
 
 
 def check_command(cmd_name):
-    """ Raise a FileNotFoundError if the command is not found.
+    """Raise a FileNotFoundError if the command is not found.
     :param cmd_name:
     """
     if which(cmd_name) is None:
-        raise FileNotFoundError('Could not find command named {}.'.format(cmd_name))
+        raise FileNotFoundError(f"Could not find command named {cmd_name}.")
 
 
 def call_command(cmd_name, args_strings):
@@ -96,13 +95,13 @@ def call_command(cmd_name, args_strings):
 
     try:
         cmd_line = [cmd_fullpath] + args_strings
-        log.debug('Calling: `{}`.'.format(' '.join(cmd_line)))
+        log.debug("Calling: `{}`.".format(" ".join(cmd_line)))
         # retval = subprocess.check_call(cmd_line)
-        retval = subprocess.call(' '.join(cmd_line), shell=True)
+        retval = subprocess.call(" ".join(cmd_line), shell=True)
     except CalledProcessError as ce:
         log.exception(
             "Error calling command with arguments: "
-            "{} \n With return code: {}".format(cmd_line, ce.returncode)
+            f"{cmd_line} \n With return code: {ce.returncode}"
         )
         raise
     else:

@@ -1,0 +1,25 @@
+---
+name: Development branch
+
+concurrency:
+  group: ${{ github.ref }}-development
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  packages: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deployment.tpl.yml
+    secrets: inherit
+    with:
+      dry-run: false

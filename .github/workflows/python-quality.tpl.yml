@@ -1,0 +1,124 @@
+---
+name: "Template: Run code checks on Python project"
+
+on:
+  workflow_call:
+    inputs:
+      ## General
+      working-directory:
+        required: true
+        type: string
+        description: |
+          "Directory in which the terraform project is located"
+      python-version:
+        required: false
+        default: "3.12"
+        type: string
+        description: |
+          "Python version to use"
+      run-tests:
+        required: false
+        type: boolean
+        description: |
+          "Run tests before zipping the lambda"
+        default: true
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        id: setup-python
+        with:
+          version: 0.7.5
+          python-version: ${{ inputs.python-version }}
+          enable-cache: true
+          cache-dependency-glob: |
+            **/uv.lock
+            **/pyproject.toml
+
+      - name: Cache hit
+        run: echo '${{ steps.setup-python.outputs.cache-hit }}' # true if cache-hit occured on the primary key
+
+      - name: Install CI dependencies
+        run: uv sync --all-extras
+
+      - name: pytest
+        id: pytest
+        if: ${{ inputs.run-tests }}
+        run: uv run pytest --cov -vvv
+        continue-on-error: true
+
+      - name: PyTest Failure
+        if: inputs.run-tests && steps.pytest.outcome == 'failure'
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-id: check-zip-lambda-pytest-${{ inputs.working-directory }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            #### PyTest failed for **${{ inputs.working-directory }}**:
+
+            ```
+            ${{ steps.pytest.outputs.stdout }}
+            ```
+
+      - name: mypy
+        id: mypy
+        run: uv run mypy .
+        continue-on-error: true
+
+      - name: Mypy Failure
+        if: steps.mypy.outcome == 'failure'
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-id: check-zip-lambda-mypy-${{ inputs.working-directory }}
+          allow-repeats: true
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            #### Mypy failed for **${{ inputs.working-directory }}**:
+            ```
+            ${{ steps.mypy.outputs.stdout }}
+            ```
+            ```
+            ${{ steps.mypy.outputs.stderr }}
+            ```
+
+      - name: ruff check
+        id: ruff
+        run: uv run ruff check --output-format=github --fix .
+        continue-on-error: true
+
+      - name: Ruff Failure
+        if: steps.ruff.outcome == 'failure'
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-id: check-zip-lambda-ruff-${{ inputs.working-directory }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            #### Ruff failed for **${{ inputs.working-directory }}**:
+            ```
+            ${{ steps.ruff.outputs.stdout }}
+            ```
+            ```
+            ${{ steps.ruff.outputs.stderr }}
+            ```
+
+      - name: Errors Found
+        if: >-
+          steps.pytest.outcome == 'failure' ||
+          steps.mypy.outcome == 'failure' ||
+          steps.ruff.outcome == 'failure'
+        run: exit 1

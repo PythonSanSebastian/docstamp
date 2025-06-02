@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
-import csv
 import codecs
+import csv
+from io import StringIO
+from typing import TYPE_CHECKING
 
-try:
-    from cStringIO import StringIO
-except:
-    from io import StringIO
+if TYPE_CHECKING:
+    from csv import Dialect
 
 
 class UnicodeWriter:
@@ -15,14 +15,20 @@ class UnicodeWriter:
     which is encoded in the given encoding.
     """
 
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+    def __init__(
+        self,
+        file: StringIO,
+        dialect: Dialect = csv.excel,
+        encoding: str = "utf-8",
+        **kwargs,
+    ):
         # Redirect output to a queue
         self.queue = StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
-        self.stream = f
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwargs)
+        self.stream = file
         self.encoder = codecs.getincrementalencoder(encoding)()
 
-    def writerow(self, row):
+    def writerow(self, row: list[str]):
         self.writer.writerow([s.encode("utf-8") for s in row])
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
@@ -34,6 +40,6 @@ class UnicodeWriter:
         # empty queue
         self.queue.truncate(0)
 
-    def writerows(self, rows):
+    def writerows(self, rows: list[list[str]]):
         for row in rows:
             self.writerow(row)

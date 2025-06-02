@@ -2,6 +2,9 @@
 Function helpers to treat XML content.
 """
 
+from __future__ import annotations
+
+import os
 from xml.sax.saxutils import escape, unescape
 
 from .file_utils import replace_file_content
@@ -17,9 +20,10 @@ xml_escape_table = {
 xml_unescape_table = {v: k for k, v in xml_escape_table.items()}
 
 
-def xml_escape(text):
-    """ Replace not valid characters for XML such as &, < and > to
-      their valid replacement strings
+def xml_escape(text: str) -> str:
+    """
+    Replace not valid characters for XML such as &, < and > to
+    their valid replacement strings
 
     Parameters
     ----------
@@ -33,8 +37,8 @@ def xml_escape(text):
     return escape(text, xml_escape_table)
 
 
-def xml_unescape(text):
-    """ Do the inverse of `xml_escape`.
+def xml_unescape(text: str) -> str:
+    """Do the inverse of `xml_escape`.
 
     Parameters
     ----------
@@ -48,8 +52,10 @@ def xml_unescape(text):
     return unescape(text, xml_unescape_table)
 
 
-def change_xml_encoding(filepath, src_enc, dst_enc='utf-8'):
-    """ Modify the encoding entry in the XML file.
+def change_xml_encoding(
+    filepath: os.PathLike | str, src_enc: str, dst_enc: str = "utf-8"
+):
+    """Modify the encoding entry in the XML file.
 
     Parameters
     ----------
@@ -63,4 +69,9 @@ def change_xml_encoding(filepath, src_enc, dst_enc='utf-8'):
         Encoding to be set in the file.
     """
     enc_attr = "encoding='{}'"
-    replace_file_content(filepath, enc_attr.format(src_enc), enc_attr.format(dst_enc), 1)
+    replace_file_content(
+        filepath=filepath,
+        old=enc_attr.format(src_enc),
+        new=enc_attr.format(dst_enc),
+        max=1,
+    )

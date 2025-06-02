@@ -1,25 +1,12 @@
-# coding=utf-8
-# -------------------------------------------------------------------------------
-# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
-# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
-# Universidad del Pais Vasco UPV/EHU
-#
-# 2015, Alexandre Manhaes Savio
-# Use this at your own risk!
-# -------------------------------------------------------------------------------
-
 import os
 import re
-import logging
+from pathlib import Path
 from sys import platform as _platform
 
-from docstamp.commands import which, is_exe
-
-LOGGING_LVL = logging.INFO
-logging.basicConfig(level=LOGGING_LVL)
+from docstamp.commands import is_exe, which
 
 
-def find_file_match(folder_path, regex=''):
+def find_file_match(folder_path, regex=""):
     """
     Returns absolute paths of files that match the regex within folder_path and
     all its children folders.
@@ -40,44 +27,41 @@ def find_file_match(folder_path, regex=''):
     """
     outlist = []
     for root, dirs, files in os.walk(folder_path):
-        outlist.extend([os.path.join(root, f) for f in files
-                        if re.match(regex, f)])
+        outlist.extend([os.path.join(root, f) for f in files if re.match(regex, f)])
 
     return outlist
 
 
 def get_system_path():
-    if _platform == "linux" or _platform == "linux2":
-        return os.environ['PATH']
-    elif _platform == "darwin":
-        return os.environ['PATH']
+    if _platform == "linux" or _platform == "linux2" or _platform == "darwin":
+        return os.environ["PATH"]
     elif _platform == "win32":
         # don't know if this works
-        return os.environ['PATH']
+        return os.environ["PATH"]
 
 
 def get_other_program_folders():
     if _platform == "linux" or _platform == "linux2":
-        return ['/opt/bin']
+        return ["/opt/bin"]
     elif _platform == "darwin":
-        return ['/Applications', os.path.join(os.environ['HOME'], 'Applications')]
+        return ["/Applications", os.path.join(os.environ["HOME"], "Applications")]
     elif _platform == "win32":
         # don't know if this works
-        return ['C:\Program Files']
+        return [r"C:\Program Files"]
 
 
 def get_temp_dir():
     if _platform == "linux" or _platform == "linux2":
-        return '/tmp'
+        return "/tmp"
     elif _platform == "darwin":
-        return '.'
+        return "."
     elif _platform == "win32":
         # don't know if this works
         return None
 
 
 def find_in_other_programs_folders(app_name):
-    app_name_regex = '^' + app_name + '$'
+    app_name_regex = "^" + app_name + "$"
     other_folders = get_other_program_folders()
 
     for folder in other_folders:
@@ -96,27 +80,57 @@ def find_program(root_dir, exec_name):
     return None
 
 
-def ask_for_path_of(app_name):
+def ask_for_path_of(app_name: str) -> str:
+    """Ask the user for the path of the application binary.
+    This function will repeatedly prompt the user until a valid executable
+    file is provided.
+    Parameters
+    ----------
+    app_name: str
+        The name of the application to find.
+    Returns
+    -------
+    str
+        The path to the binary file.
+    Raises
+    ------
+    ValueError
+        If the provided path does not exist or is not executable.
+    """
     bin_path = None
     while bin_path is not None:
-        bin_path = input('Insert path of {} executable file [Press Ctrl+C to exit]: '.format(app_name))
+        bin_path = input(
+            f"Insert path of {app_name} executable file [Press Ctrl+C to exit]: "
+        )
 
         if not os.path.exists(bin_path):
-            print('Could not find file {}. Try it again.'.format(bin_path))
+            print(f"Could not find file {bin_path}. Try it again.")
             bin_path = None
             continue
 
         if not is_exe(bin_path):
-            print('No execution permissions on file {}. Try again.'.format(bin_path))
+            print(f"No execution permissions on file {bin_path}. Try again.")
             bin_path = None
             continue
 
         return bin_path
 
 
-def proactive_search_of(app_name):
-    if _platform == 'win32':
-        bin_name = app_name + '.exe'
+def proactive_search_of(app_name: str) -> str | None:
+    """Proactively search for the binary of the given application.
+    This function checks the system PATH, common program folders, and prompts
+    the user for the path if the binary is not found.
+    Parameters
+    ----------
+    app_name: str
+        The name of the application to search for.
+    Returns
+    -------
+    str | None
+        The path to the binary if found, otherwise None.
+    """
+    if _platform == "win32":
+        bin_name = app_name + ".exe"
     else:
         bin_name = app_name
 
@@ -131,29 +145,22 @@ def proactive_search_of(app_name):
     return ask_for_path_of(bin_name)
 
 
-def get_inkscape_binpath():
-    bin_name = 'inkscape'
+def get_inkscape_binpath() -> Path | None:
+    """Return the Inkscape binary path."""
+    bin_name = "inkscape"
     if _platform == "darwin":
-        bin_name = 'inkscape-bin'
+        bin_name = "inkscape-bin"
 
-    if 'INKSCAPE_BINPATH' not in globals():
+    if "INKSCAPE_BINPATH" not in globals():
         global INKSCAPE_BINPATH
         INKSCAPE_BINPATH = proactive_search_of(bin_name)
 
-    return INKSCAPE_BINPATH
+    return Path(INKSCAPE_BINPATH) if INKSCAPE_BINPATH else None
 
 
-def get_lyx_binpath():
-    if 'LYX_BINPATH' not in globals():
+def get_lyx_binpath() -> Path | None:
+    """Return the LyX binary path."""
+    if "LYX_BINPATH" not in globals():
         global LYX_BINPATH
-        LYX_BINPATH = proactive_search_of('lyx')
-    return LYX_BINPATH
-
-# TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-
-# JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
-# JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
-
-# FILE_EXPORTERS = {'.svg': Inkscape,}
-#                   '.tex': PdfLatex,
-#                   '.lyx': LyX}
+        LYX_BINPATH = proactive_search_of("lyx")
+    return Path(LYX_BINPATH) if LYX_BINPATH else None

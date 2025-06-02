@@ -1,0 +1,43 @@
+---
+name: "Template: deployment"
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        required: false
+        type: boolean
+        description: |
+          "Run the workflow in dry-run mode"
+        default: true
+
+jobs:
+  # We do it this way to avoid checking for changes in each job
+  changes:
+    name: "Check for changes"
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: main
+          filters: >-
+            api:
+              - api/**/*
+              - .github/workflows/python-*
+
+  api-quality:
+    name: "API: Quality"
+    needs: changes
+    if: >-
+      needs.changes.outputs.api == 'true'
+    uses: ./.github/workflows/api-quality.tpl.yml
+    secrets: inherit
+    with:
+      working-directory: api

@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Utilities for the CLI functions.
 """
-import re
+
 import json
 import logging
+import re
 from csv import DictReader
 
 import click
@@ -12,9 +12,8 @@ import click
 from docstamp.model import json_to_dict
 
 # different context options
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-UNKNOWN_OPTIONS = dict(allow_extra_args=True,
-                       ignore_unknown_options=True)
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+UNKNOWN_OPTIONS = dict(allow_extra_args=True, ignore_unknown_options=True)
 
 # specification of existing ParamTypes
 DirPath = click.Path(file_okay=False, resolve_path=True)
@@ -26,19 +25,19 @@ UnexistingFilePath = click.Path(dir_okay=False, resolve_path=True)
 # validators
 def check_not_none(ctx, param, value):
     if value is None:
-        raise click.BadParameter('got {}.'.format(value))
+        raise click.BadParameter(f"got {value}.")
     return value
 
 
 # declare custom click.ParamType
 class RegularExpression(click.ParamType):
-    name = 'regex'
+    name = "regex"
 
     def convert(self, value, param, ctx):
         try:
             rex = re.compile(value, re.IGNORECASE)
         except ValueError:
-            self.fail('%s is not a valid regular expression.' % value, param, ctx)
+            self.fail("%s is not a valid regular expression." % value, param, ctx)
         else:
             return rex
 
@@ -53,13 +52,12 @@ def get_items_from_csv(csv_filepath):
     # CSV to JSON
     # one JSON object for each item
     items = {}
-    with open(str(csv_filepath), 'r') as csvfile:
-
+    with open(str(csv_filepath)) as csvfile:
         reader = DictReader(csvfile)
 
         for idx, row in enumerate(reader):
             item = json_to_dict(json.dumps(row))
-            if any([item[i] != '' for i in item]):
+            if any([item[i] != "" for i in item]):
                 items[idx] = item
 
     return items, reader.fieldnames
