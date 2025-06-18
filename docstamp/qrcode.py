@@ -53,7 +53,7 @@ def save_into_qrcode(
     out_filepath: os.PathLike | str,
     color: str = "",
     box_size: float = 10,
-):
+) -> None:
     """Save `text` in a qrcode svg image file.
 
     Parameters
@@ -71,25 +71,12 @@ def save_into_qrcode(
         Size of the QR code boxes.
     """
     img = _create_qrcode_image(text=text, box_size=box_size)
-    _ = _save_qrcode(qrcode=img, out_filepath=out_filepath)
-    if color:
-        replace_file_content(out_filepath, "fill:#000000", f"fill:#{color}")
-
-
-def _save_qrcode(qrcode: qrcode.image.svg.SvgPathImage, out_filepath: str):
-    """Save a `qrcode` object into `out_filepath`.
-    Parameters
-    ----------
-    qrcode: qrcode object
-
-    out_filepath: str
-        Path to the output file.
-    """
     try:
-        qrcode.save(out_filepath)
+        img.save(out_filepath)
     except Exception as exc:
         raise RuntimeError(
             f"Error trying to save QR code file {out_filepath}."
         ) from exc
     else:
-        return qrcode
+        if color:
+            replace_file_content(out_filepath, "fill:#000000", f"fill:#{color}")

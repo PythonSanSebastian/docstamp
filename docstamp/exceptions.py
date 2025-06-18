@@ -11,3 +11,7 @@ class ExportError(Exception):
 
 class QRCodeError(Exception):
     """Exception raised when there is an error generating or saving a QR code."""
+
+
+class FileDeletionError(Exception):
+    """Exception raised when there is an error deleting a file."""

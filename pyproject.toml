@@ -9,6 +9,7 @@ dependencies = [
   "qrcode>=6.1",
   "svgutils==0.3.1",
   "click>=7.0",
+  "orjson>=3.10.18",
 ]
 authors = [
   {name = "Alexandre Manhaes Savio", email = "alexsavio@github.com"},

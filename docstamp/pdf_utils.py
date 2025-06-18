@@ -1,5 +1,7 @@
 """Function helpers to manage PDF files."""
 
+from __future__ import annotations
+
 import os
 from pathlib import Path
 
@@ -9,7 +11,8 @@ from .commands import call_command
 
 
 def merge_pdfs(
-    pdf_filepaths: list[os.Pathlike | str], out_filepath: str | os.PathLike
+    pdf_filepaths: list[os.PathLike | str],
+    out_filepath: str | os.PathLike,
 ) -> Path:
     """Merge all the PDF files in `pdf_filepaths` in a new PDF file `out_filepath`.
 
@@ -35,7 +38,7 @@ def merge_pdfs(
     return out_filepath
 
 
-def pdf_to_cmyk(input_file: os.Pathlike | str, output_file: os.Pathlike | str) -> int:
+def pdf_to_cmyk(input_file: os.PathLike | str, output_file: os.PathLike | str) -> int:
     """Use `gs` (Ghostscript) to convert the colour model of a PDF to CMYK
     for printing.
 

@@ -2,71 +2,34 @@ from __future__ import annotations
 
 import os
 import tempfile
-from glob import glob
 from pathlib import Path
 
 from docstamp.config import get_temp_dir
+from docstamp.exceptions import FileDeletionError
 
 
-def get_extension(filepath, check_if_exists=False):
+def get_extension(filepath: os.PathLike | str) -> str:
     """Return the extension of fpath.
 
     Parameters
     ----------
-    fpath: string
-    File name or path
-
-    check_if_exists: bool
+    filepath: string
+        File name or path
 
     Returns
     -------
     str
     The extension of the file name or path
     """
-    if check_if_exists:
-        if not os.path.exists(filepath):
-            err = "File not found: " + filepath
-            log.error(err)
-            raise FileNotFoundError(err)
-
     try:
-        rest, ext = os.path.splitext(filepath)
+        ext = "".join(Path(filepath).suffixes[-2:])
     except:
         raise
     else:
         return ext
 
 
-def add_extension_if_needed(filepath, ext, check_if_exists=False):
-    """Add the extension ext to fpath if it doesn't have it.
-
-    Parameters
-    ----------
-    filepath: str
-    File name or path
-
-    ext: str
-    File extension
-
-    check_if_exists: bool
-
-    Returns
-    -------
-    File name or path with extension added, if needed.
-    """
-    if not filepath.endswith(ext):
-        filepath += ext
-
-    if check_if_exists:
-        if not os.path.exists(filepath):
-            err = "File not found: " + filepath
-            log.error(err)
-            raise OSError(err)
-
-    return filepath
-
-
-def remove_ext(filepath):
+def remove_ext(filepath: os.PathLike | str) -> str:
     """Removes the extension of the file.
 
     Parameters
@@ -79,10 +42,16 @@ def remove_ext(filepath):
     str
         File path or name without extension
     """
-    return filepath[: filepath.rindex(get_extension(filepath))]
+    extension = get_extension(filepath)
+    if not extension:
+        return filepath
+    return filepath.removesuffix(extension)
 
 
-def get_tempfile(suffix=".txt", dirpath=None):
+def get_tempfile(
+    suffix: str = ".txt",
+    dirpath: os.PathLike | str | None = None,
+) -> tempfile.NamedTemporaryFile:
     """Return a temporary file with the given suffix within dirpath.
     If dirpath is None, will look for a temporary folder in your system.
 
@@ -105,7 +74,7 @@ def get_tempfile(suffix=".txt", dirpath=None):
     return tempfile.NamedTemporaryFile(suffix=suffix, dir=dirpath)
 
 
-def cleanup(workdir, extension):
+def cleanup(workdir: os.PathLike | str, extension: str):
     """Remove the files in workdir that have the given extension.
 
     Parameters
@@ -116,42 +85,14 @@ def cleanup(workdir, extension):
     extension: str
         File extension without the dot, e.g., 'txt'
     """
-    [os.remove(f) for f in glob(os.path.join(workdir, "*." + extension))]
-
-
-def csv_to_json(csv_filepath, json_filepath, fieldnames, ignore_first_line=True):
-    """Convert a CSV file in `csv_filepath` into a JSON file in `json_filepath`.
-
-    Parameters
-    ----------
-    csv_filepath: str
-        Path to the input CSV file.
-
-    json_filepath: str
-        Path to the output JSON file. Will be overwritten if exists.
-
-    fieldnames: List[str]
-        Names of the fields in the CSV file.
-
-    ignore_first_line: bool
-    """
-    import csv
-    import json
-
-    csvfile = open(csv_filepath)
-    jsonfile = open(json_filepath, "w")
-
-    reader = csv.DictReader(csvfile, fieldnames)
-    rows = []
-    if ignore_first_line:
-        next(reader)
-
-    for row in reader:
-        rows.append(row)
-
-    json.dump(rows, jsonfile)
-    jsonfile.close()
-    csvfile.close()
+    cleanup_target = Path(workdir)
+    for f in cleanup_target.glob("*." + extension):
+        try:
+            f.unlink()
+        except OSError as exc:
+            raise FileDeletionError(
+                f"Error trying to delete file {f} in {workdir}."
+            ) from exc
 
 
 def replace_file_content(filepath: os.PathLike | str, old: str, new: str, max: int = 1):
@@ -175,14 +116,3 @@ def replace_file_content(filepath: os.PathLike | str, old: str, new: str, max: i
     content = _filepath.read_text()
     content = content.replace(old=old, new=new, count=max)
     _filepath.write_text(content)
-
-
-def cleanup_docstamp_output(output_dir=""):
-    """Remove the 'tmp*.aux', 'tmp*.out' and 'tmp*.log' files in `output_dir`.
-    :param output_dir:
-    """
-    suffixes = ["aux", "out", "log"]
-    files = [
-        f for suf in suffixes for f in glob(os.path.join(output_dir, f"tmp*.{suf}"))
-    ]
-    [os.remove(file) for file in files]

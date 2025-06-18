@@ -1,7 +1,11 @@
 #!python
+from __future__ import annotations
+
 import logging
 import math
 import os
+from pathlib import Path
+import sys
 
 import click
 
@@ -98,7 +102,7 @@ def cli():
     default=False,
     help="Allows unicode characters to be correctly encoded in the PDF.",
 )
-def create(
+def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
     input,
     template,
     field,
@@ -122,85 +126,98 @@ def create(
     log = logging.getLogger(__name__)
 
     # setup verbose mode
-    verbose_switch(verbose)
+    if verbose:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    logging.getLogger().setLevel(log_level)
 
     input_file = input
     fields = field
 
     # init set of template contents
-    log.debug(f"Reading CSV elements from {input_file}.")
-    items, fieldnames = get_items_from_csv(input_file)
+    log.debug("Reading CSV elements from %s.", input_file)
+    items, header_fields = get_items_from_csv(input_file)
+    if not header_fields:
+        raise ValueError(
+            f"Could not read the header from '{input_file}'. "
+            "Please check the input file format."
+        )
 
     # check if got any item
     if len(items) == 0:
         click.echo("Quiting because found 0 items.")
-        exit(-1)
+        sys.exit(-1)
 
     if not fields:
-        # set the number of zeros that the files will have
+        # set the number of zeros that the file name will have
         n_zeros = int(math.floor(math.log10(len(items))) + 1)
     else:
         # check that fields has all valid fields
         for field_name in fields:
-            if field_name not in fieldnames:
+            if field_name not in header_fields:
                 raise ValueError(
-                    f"Field name {field_name} not found in input file  header."
+                    f"Field name {field_name} not found in input file header."
                 )
 
     # filter the items if index
     if index:
-        myitems = {idx: items[idx] for idx in index}
-        items = myitems
-        log.debug(f"Using the elements with index {index} of the input file.")
+        picked_items = {idx: items[idx] for idx in index}
+        items = picked_items
+        log.debug("Using the elements with index %s of the input file.", index)
 
     # make output folder
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
+    output_directory = Path(outdir)
+    output_directory.mkdir(parents=True, exist_ok=True)
 
     # create template document model
-    log.debug(f"Creating the template object using the file {template}.")
+    log.debug("Creating the template object using the file %s.", template)
     template_doc = TextDocument.from_template_file(template, command)
-    log.debug(f"Created an object of type {type(template_doc)}.")
+    log.debug("Created an object of type %s.", type(template_doc))
 
     # let's stamp them!
     for idx in items:
         item = items[idx]
 
-        if not len(fields):
+        if not fields:
             file_name = str(idx).zfill(n_zeros)
         else:
             field_values = []
             try:
                 for field_name in fields:
                     field_values.append(item[field_name].replace(" ", ""))
-            except:
-                log.exception(f"Could not get field {field_name} value from {item}")
-                exit(-1)
+            except KeyError as _:
+                log.exception("Could not get field %s value from %s", field_name, item)
+                sys.exit(-1)
             else:
                 file_name = "_".join(field_values)
 
-        log.debug(f"Filling template {file_name} with values of item {idx}.")
+        log.debug("Filling template %s with values of item %s.", file_name, idx)
         try:
-            template_doc.fill(item)
+            template_doc.render(item)
         except:
-            log.exception(f"Error filling document for {idx}th item")
+            log.exception("Error filling document for %sth item", idx)
             continue
 
         # set output file path
-        file_extension = get_extension(template)
         if prefix is None:
-            basename = os.path.basename(template).replace(file_extension, "")
-
-        file_name = basename + "_" + file_name
-        file_path = os.path.join(outdir, file_name + "." + otype)
-
-        kwargs = {"file_type": otype, "dpi": dpi, "support_unicode": unicode_support}
-
-        log.debug(f"Rendering file {file_path}.")
-        try:
-            template_doc.render(file_path, **kwargs)
-        except:
-            log.exception(f"Error creating {file_path} for {item}.")
-            exit(-1)
+            file_extension = get_extension(template)
+            basename = Path(template).name.replace(file_extension, "")
         else:
-            log.debug(f"Successfully rendered {file_path}.")
+            basename = prefix
+
+        file_path = output_directory / f"{basename + "_" + file_name}.{otype}"
+        log.debug("Rendering file %s.", file_path)
+        try:
+            template_doc.export(
+                file_path=file_path,
+                file_type=otype,
+                dpi=dpi,
+                support_unicode=unicode_support,
+            )
+        except:
+            log.exception("Error creating %s for %s.", file_path, item)
+            sys.exit(-1)
+        else:
+            log.debug("Successfully rendered %s.", file_path)

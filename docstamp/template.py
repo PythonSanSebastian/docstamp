@@ -104,7 +104,7 @@ class TextDocument:
         self,
         file_path: os.PathLike | str,
         doc_contents: dict[str, Any],
-        encoding: str = "utf-8",
+        **kwargs: Any,
     ):
         """Export the rendered document to a file.
 
@@ -119,6 +119,7 @@ class TextDocument:
         """
         rendered_content = self.render(doc_contents=doc_contents)
         _file_path = Path(file_path)
+        encoding = kwargs.get("encoding", "utf-8")
         try:
             _file_path.write_text(
                 rendered_content,
@@ -188,7 +189,10 @@ class SVGDocument(TextDocument):
             ) from error
 
     def export(
-        self, file_path: os.PathLike | str, doc_contents: dict[str, Any], **kwargs
+        self,
+        file_path: os.PathLike | str,
+        doc_contents: dict[str, Any],
+        **kwargs,
     ):
         """Export the content of the .svg file in the chosen rendered format.
 

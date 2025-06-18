@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 
 import svgutils
 import svgutils.transform as sg
 
-from docstamp.commands import call_command, check_command, which
+from docstamp.commands import call_command, check_command
 
 
 def replace_chars_for_svg_code(svg_content: str) -> str:
@@ -140,11 +141,11 @@ def rsvg_export(
         Command call return value
     """
     _input_file = Path(input_file)
-    if not input_file.exists():
+    if not _input_file.exists():
         raise FileNotFoundError(f"File {input_file} not found.")
 
     if rsvg_binpath is None:
-        rsvg_binpath = which(cmd_name="rsvg-convert")
+        rsvg_binpath = shutil.which(cmd_name="rsvg-convert")
         check_command(cmd_name=rsvg_binpath)
 
     args_strings = [
