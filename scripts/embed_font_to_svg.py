@@ -1,48 +1,64 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-import os
-import base64
+from __future__ import annotations
+
 import argparse
+import base64
 import logging
+import os
+import sys
+
 from lxml import etree
 
-
-FONT_TYPES = {'ttf': 'truetype',
-              'otf': 'opentype'}
+FONT_TYPES = {"ttf": "truetype", "otf": "opentype"}
 
 
 def create_argparser():
-    parser = argparse.ArgumentParser(description='Embed base64 font to SVG file')
-    parser.add_argument('-i', '--input', action='store', dest='svg_filepath',
-                        default='',
-                        help='The SVG file path. If you dont give input file, '
-                             ' will output to the file or stdout')
-    parser.add_argument('-f', '--font', action='append', dest='fonts',
-                        default=[],
-                        help='Font file. You can add as many as you want.')
-    parser.add_argument('-o', '--output', action='store', dest='out_path',
-                        default='',
-                        help='The resulting SVG file path. Overwritten if exist.')
+    parser = argparse.ArgumentParser(description="Embed base64 font to SVG file")
+    parser.add_argument(
+        "-i",
+        "--input",
+        action="store",
+        dest="svg_filepath",
+        default="",
+        help="The SVG file path. If you dont give input file, "
+        " will output to the file or stdout",
+    )
+    parser.add_argument(
+        "-f",
+        "--font",
+        action="append",
+        dest="fonts",
+        default=[],
+        help="Font file. You can add as many as you want.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        action="store",
+        dest="out_path",
+        default="",
+        help="The resulting SVG file path. Overwritten if exist.",
+    )
     return parser
 
 
 def get_base64_encoding(bin_filepath):
     """Return the base64 encoding of the given binary file"""
-    return base64.b64encode(open(bin_filepath, 'r').read())
+    return base64.b64encode(open(bin_filepath).read())
 
 
 def remove_ext(filepath):
     """Return the basename of filepath without extension."""
-    return os.path.basename(filepath).split('.')[0]
+    return os.path.basename(filepath).split(".")[0]
 
 
 def get_ext(filepath):
     """Return file extension"""
-    return os.path.basename(filepath).split('.')[-1]
+    return os.path.basename(filepath).split(".")[-1]
 
 
-class FontFace(object):
+class FontFace:
     """CSS font-face object"""
 
     def __init__(self, filepath, fonttype=None, name=None):
@@ -78,15 +94,15 @@ class FontFace(object):
 
     @property
     def css_text(self):
-        css_text = u"@font-face{\n"
-        css_text += u"font-family: " + self.name + ";\n"
-        css_text += u"src: url(data:font/" + self.ext + ";"
-        css_text += u"base64," + self.base64 + ") "
-        css_text += u"format('" + self.fonttype + "');\n}\n"
+        css_text = "@font-face{\n"
+        css_text += "font-family: " + self.name + ";\n"
+        css_text += "src: url(data:font/" + self.ext + ";"
+        css_text += "base64," + self.base64 + ") "
+        css_text += "format('" + self.fonttype + "');\n}\n"
         return css_text
 
 
-class FontFaceGroup(object):
+class FontFaceGroup:
     """Group of FontFaces"""
 
     def __init__(self):
@@ -94,10 +110,10 @@ class FontFaceGroup(object):
 
     @property
     def css_text(self):
-        css_text = u'<style type="text/css">'
+        css_text = '<style type="text/css">'
         for ff in self.fontfaces:
             css_text += ff.css_text
-        css_text += u'</style>'
+        css_text += "</style>"
         return css_text
 
     @property
@@ -108,8 +124,7 @@ class FontFaceGroup(object):
         self.fontfaces.append(font_face)
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__file__)
 
@@ -117,9 +132,9 @@ if __name__ == '__main__':
     try:
         args = parser.parse_args()
     except argparse.ArgumentError as exc:
-        log.exception('Error parsing arguments.')
+        log.exception("Error parsing arguments.")
         parser.error(str(exc.message))
-        exit(-1)
+        sys.exit(-1)
 
     svg_filepath = args.svg_filepath
     fonts = args.fonts
@@ -131,8 +146,8 @@ if __name__ == '__main__':
     if not svg_filepath:
         raw_write = True
     elif not os.path.exists(svg_filepath):
-        log.error('Could not find file: {}'.format(svg_filepath))
-        exit(-1)
+        log.error(f"Could not find file: {svg_filepath}")
+        sys.exit(-1)
 
     if not out_path:
         raw_write = True
@@ -140,8 +155,8 @@ if __name__ == '__main__':
 
     # check if user gave any font
     if not fonts:
-        log.error('No fonts given.')
-        exit(-1)
+        log.error("No fonts given.")
+        sys.exit(-1)
 
     # build the stuff to write
     fontfaces = FontFaceGroup()
@@ -151,20 +166,20 @@ if __name__ == '__main__':
     # write the stuff
     if raw_write and stdout:
         print(fontfaces.css_text)
-        exit(0)
+        sys.exit(0)
 
     elif raw_write:
         xtree = etree.ElementTree(fontfaces.xml_elem)
         xtree.write(out_path)
-        exit(0)
+        sys.exit(0)
 
     else:
-        with open(svg_filepath, 'r') as svgf:
+        with open(svg_filepath) as svgf:
             tree = etree.parse(svgf)
 
         for element in tree.iter():
-            if element.tag.split("}")[1] == 'svg':
+            if element.tag.split("}")[1] == "svg":
                 break
         element.insert(0, fontfaces.xml_elem)
-        tree.write(out_path, encoding='utf-8', pretty_print=True)
-        exit(0)
+        tree.write(out_path, encoding="utf-8", pretty_print=True)
+        sys.exit(0)

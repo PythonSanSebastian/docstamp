@@ -1,25 +1,13 @@
-# coding=utf-8
-# -------------------------------------------------------------------------------
-# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
-# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
-# Universidad del Pais Vasco UPV/EHU
-#
-# 2015, Alexandre Manhaes Savio
-# Use this at your own risk!
-# -------------------------------------------------------------------------------
+from __future__ import annotations
 
 import os
 import re
-import logging
+import shutil
+from pathlib import Path
 from sys import platform as _platform
 
-from docstamp.commands import which, is_exe
 
-LOGGING_LVL = logging.INFO
-logging.basicConfig(level=LOGGING_LVL)
-
-
-def find_file_match(folder_path, regex=''):
+def find_file_match(folder_path: Path, regex: str = ".*") -> list[Path]:
     """
     Returns absolute paths of files that match the regex within folder_path and
     all its children folders.
@@ -29,7 +17,8 @@ def find_file_match(folder_path, regex=''):
 
     Parameters
     ----------
-    folder_path: string
+    folder_path: Path
+        The folder path to search in.
 
     regex: string
 
@@ -39,47 +28,53 @@ def find_file_match(folder_path, regex=''):
 
     """
     outlist = []
-    for root, dirs, files in os.walk(folder_path):
-        outlist.extend([os.path.join(root, f) for f in files
-                        if re.match(regex, f)])
+    for root, _, files in folder_path.walk():
+        outlist.extend([Path(root) / f for f in files if re.match(regex, f)])
 
     return outlist
 
 
-def get_system_path():
+def get_other_program_folders() -> list[Path]:
+    """Return a list of common program folders based on the platform."""
     if _platform == "linux" or _platform == "linux2":
-        return os.environ['PATH']
+        return [
+            Path("/opt/bin"),
+            Path("/usr/local/bin"),
+            Path("/usr/bin"),
+            Path("/bin"),
+            Path("/usr/sbin"),
+            Path("/sbin"),
+        ]
     elif _platform == "darwin":
-        return os.environ['PATH']
+        return [Path("/Applications"), Path(os.environ["HOME"]) / "Applications"]
     elif _platform == "win32":
         # don't know if this works
-        return os.environ['PATH']
+        return [Path(r"C:\Program Files")]
+    else:
+        raise NotImplementedError(
+            f"Platform {_platform} is not supported for finding other program folders."
+        )
 
 
-def get_other_program_folders():
+def get_temp_dir() -> Path | None:
+    """Return the temporary directory based on the platform."""
     if _platform == "linux" or _platform == "linux2":
-        return ['/opt/bin']
+        return Path("/tmp")
     elif _platform == "darwin":
-        return ['/Applications', os.path.join(os.environ['HOME'], 'Applications')]
-    elif _platform == "win32":
-        # don't know if this works
-        return ['C:\Program Files']
-
-
-def get_temp_dir():
-    if _platform == "linux" or _platform == "linux2":
-        return '/tmp'
-    elif _platform == "darwin":
-        return '.'
+        return Path.cwd()
     elif _platform == "win32":
         # don't know if this works
         return None
+    else:
+        raise NotImplementedError(
+            f"Platform {_platform} is not supported for getting the temporary directory."
+        )
 
 
-def find_in_other_programs_folders(app_name):
-    app_name_regex = '^' + app_name + '$'
+def find_in_other_programs_folders(app_name: str) -> Path | None:
+    """Search for the application binary in common program folders."""
+    app_name_regex = f"^{app_name}$"
     other_folders = get_other_program_folders()
-
     for folder in other_folders:
         abin_file = find_program(folder, app_name_regex)
         if abin_file is not None:
@@ -88,72 +83,70 @@ def find_in_other_programs_folders(app_name):
     return None
 
 
-def find_program(root_dir, exec_name):
+def find_program(root_dir: Path, exec_name: str) -> Path | None:
+    """Find the executable file in the given directory and its subdirectories."""
     file_matches = find_file_match(root_dir, exec_name)
     for f in file_matches:
-        if is_exe(f):
+        if is_executable(f):
             return f
     return None
 
 
-def ask_for_path_of(app_name):
-    bin_path = None
-    while bin_path is not None:
-        bin_path = input('Insert path of {} executable file [Press Ctrl+C to exit]: '.format(app_name))
-
-        if not os.path.exists(bin_path):
-            print('Could not find file {}. Try it again.'.format(bin_path))
-            bin_path = None
-            continue
-
-        if not is_exe(bin_path):
-            print('No execution permissions on file {}. Try again.'.format(bin_path))
-            bin_path = None
-            continue
-
-        return bin_path
+def is_executable(filepath: str | Path) -> bool:
+    """Check if the given file is executable."""
+    filepath = Path(filepath)
+    if not filepath.exists():
+        return False
+    if _platform in ("linux", "linux2", "darwin"):
+        return filepath.is_file() and os.access(filepath, os.X_OK)
+    elif _platform == "win32":
+        return filepath.suffix.lower() in (".exe", ".bat", ".cmd")
+    else:
+        raise NotImplementedError(
+            f"Platform {_platform} is not supported for checking executable files."
+        )
 
 
-def proactive_search_of(app_name):
-    if _platform == 'win32':
-        bin_name = app_name + '.exe'
+def get_executable_path(app_name: str) -> Path | None:
+    """Search for the binary of the given application.
+    This function checks the system PATH, common program folders.
+    Parameters
+    ----------
+    app_name: str
+        The name of the application to search for.
+    Returns
+    -------
+    Path | None
+        The path to the binary if found, otherwise None.
+    """
+    if _platform == "win32":
+        bin_name = app_name + ".exe"
     else:
         bin_name = app_name
 
-    bin_path = which(app_name)
-    if bin_path is not None and is_exe(bin_path):
-        return bin_path
+    which_result = shutil.which(cmd=app_name)
+    if which_result is not None and is_executable(filepath=which_result):
+        return Path(which_result)
 
-    bin_path = find_in_other_programs_folders(bin_name)
-    if bin_path is not None:
-        return bin_path
+    search_result = find_in_other_programs_folders(app_name=bin_name)
+    if search_result is not None:
+        return search_result
 
-    return ask_for_path_of(bin_name)
+    raise FileNotFoundError(
+        f"Could not find {app_name} binary in the system PATH or common program folders. "
+        "Please provide the path manually."
+    )
 
 
-def get_inkscape_binpath():
-    bin_name = 'inkscape'
+def get_inkscape_binpath() -> Path | None:
+    """Return the Inkscape binary path."""
+    bin_name = "inkscape"
     if _platform == "darwin":
-        bin_name = 'inkscape-bin'
-
-    if 'INKSCAPE_BINPATH' not in globals():
-        global INKSCAPE_BINPATH
-        INKSCAPE_BINPATH = proactive_search_of(bin_name)
-
-    return INKSCAPE_BINPATH
+        bin_name = "inkscape-bin"
+    return get_executable_path(bin_name)
 
 
-def get_lyx_binpath():
-    if 'LYX_BINPATH' not in globals():
-        global LYX_BINPATH
-        LYX_BINPATH = proactive_search_of('lyx')
-    return LYX_BINPATH
-
-# TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-
-# JINJA_ENV = Environment(loader=PackageLoader('docstamp', 'templates'))
-# JINJA_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
-
-# FILE_EXPORTERS = {'.svg': Inkscape,}
-#                   '.tex': PdfLatex,
-#                   '.lyx': LyX}
+def get_lyx_binpath() -> Path | None:
+    """Return the LyX binary path."""
+    bin_name = "lyx"
+    return get_executable_path(bin_name)

@@ -70,3 +70,6 @@ devdoc/
 *~
 *#
 *retry
+
+.env*
+.python-version

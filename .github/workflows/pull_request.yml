@@ -1,0 +1,25 @@
+---
+name: Pull request checks
+
+concurrency:
+  group: ${{ github.ref }}-pull-request
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  packages: write
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deployment.tpl.yml
+    secrets: inherit
+    with:
+      dry-run: true

@@ -1,0 +1,165 @@
+[project]
+name = "docstamp"
+dynamic = ["version"]
+requires-python = ">= 3.12"
+dependencies = [
+  "Pillow>=6.1.0",
+  "jinja2>=2.10",
+  "PyPDF2>=1.26.0",
+  "qrcode>=6.1",
+  "svgutils==0.3.1",
+  "click>=7.0",
+  "orjson>=3.10.18",
+]
+authors = [
+  {name = "Alexandre Manhaes Savio", email = "alexsavio@github.com"},
+]
+description = "A SVG and LateX template renderer from table data based on Inkscape and Jinja2"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = [
+  "svg",
+  "latex",
+  "template",
+  "renderer",
+  "inkscape",
+  "jinja2",
+  "pdf",
+  "qrcode",
+  "cli",
+  "render",
+  "badge",
+  "inkscape",
+  "pdf",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/PythonSanSebastian/docstamp"
+Documentation = "https://github.com/PythonSanSebastian/docstamp/blob/master/README.md"
+Repository = "https://github.com/PythonSanSebastian/docstamp"
+Issues = "https://github.com/PythonSanSebastian/docstamp/issues"
+Changelog = "https://github.com/PythonSanSebastian/docstamp/blob/master/CHANGES.rst"
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.hatch.build.hooks.version]
+path = "docstamp/version.py"
+template = '''
+__version__ = "{version}"
+'''
+
+[project.scripts]
+docstamp = "docstamp.cli.main:cli"
+
+[tool.uv]
+default-groups = "all"
+
+[dependency-groups]
+dev = [
+  "hatch",
+  "mypy",
+  "ruff",
+  "bumpversion",
+]
+
+[tool.mypy]
+python_version = "3.12"
+implicit_reexport = false
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_no_return = true
+exclude = '''(?x)(
+^build/
+|^dist/
+|^.venv/
+)
+'''
+
+[tool.ruff]
+target-version = "py312"
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytest_cache",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "build",
+  "dist",
+  "venv",
+]
+
+# list of all rules: https://beta.ruff.rs/docs/rules/
+lint.ignore = [
+  "E501",   # line-too-long: we're fine with what black gives us
+  "F722",   # forward-annotation-syntax-error: https://github.com/PyCQA/pyflakes/issues/542
+  "PTH123", # pathlib-open: It's ok to use open(...) instead of Pathlib(...).open()
+  "UP007",  # typing-union: pydantic & strawberry don't handle these well in Python 3.9
+  "SIM108", # if-else-block-instead-of-if-exp: ternary operator isn't always preferred
+  "RUF012", # ruff - mutable class attributes should be annotated with `typing.ClassVar`
+  "B008",   #  flake8-bugbear - Do not perform function call `Parameter` in argument defaultsRuff(B008)
+  "S108",   # Probable insecure usage of temporary file or directory: "/tmp
+]
+lint.select = [
+  "E",
+  "F",
+  "W",
+  "G",
+  "PT",
+  "ERA",
+  "B",
+  "C90",
+  "YTT",
+  "S",
+  "A001",
+  "C4",
+  "T10",
+  "ICN",
+  "INP",
+  "PIE",
+  "T20",
+  "SIM",
+  "PTH",
+  "PGH",
+  "PL",
+  "RUF",
+  "I",
+  "UP",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+  "E402", # module-import-not-at-top-of-file: init files occasionally need imports at the bottom
+]

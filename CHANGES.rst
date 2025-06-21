@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.5.0 (18.06.2025)
+--------------------------
+- Drop support for Python 3.6.
+- Add support for Python 3.11 and 3.12.
+- Update dependencies to latest versions.
+
+
 Version 0.4.4 (12.08.2019)
 --------------------------
 - Fix bug to correctly call `call_command` in `pdf_utls.pdf_to_cmyk`.

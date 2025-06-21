@@ -1,79 +1,21 @@
-# coding=utf-8
-# -------------------------------------------------------------------------------
-# Author: Alexandre Manhaes Savio <alexsavio@gmail.com>
-# Grupo de Inteligencia Computational <www.ehu.es/ccwintco>
-# Universidad del Pais Vasco UPV/EHU
-#
-# 2015, Alexandre Manhaes Savio
-# Use this at your own risk!
-# -------------------------------------------------------------------------------
+from __future__ import annotations
 
-import os
-import sys
-import shutil
 import logging
+import os
+import shutil
 import subprocess
+from pathlib import Path
 from subprocess import CalledProcessError
 
 log = logging.getLogger(__name__)
 
 
-def simple_call(cmd_args):
-    return subprocess.call(' '.join(cmd_args), shell=True)
+def simple_call(cmd_args: list[str]) -> int:
+    """Call a command with arguments and returns its return value."""
+    return subprocess.call(" ".join(cmd_args), shell=True)  # noqa: S602
 
 
-def is_exe(fpath):
-    """Return True if fpath is an executable file path.
-
-    Parameters
-    ----------
-    fpath: str
-        File path
-
-    Returns
-    -------
-    is_executable: bool
-    """
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-
-def which(cmd_name):
-    """Returns the absolute path of the given CLI program name."""
-    if sys.version_info > (3, 0):
-        return which_py3(cmd_name)
-    else:
-        # Python 2 code in this block
-        return which_py2(cmd_name)
-
-
-def which_py3(cmd_name):
-    return shutil.which(cmd_name)
-
-
-def which_py2(cmd_name):
-    fpath, fname = os.path.split(cmd_name)
-    if fpath:
-        if is_exe(cmd_name):
-            return cmd_name
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, cmd_name)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
-
-
-def check_command(cmd_name):
-    """ Raise a FileNotFoundError if the command is not found.
-    :param cmd_name:
-    """
-    if which(cmd_name) is None:
-        raise FileNotFoundError('Could not find command named {}.'.format(cmd_name))
-
-
-def call_command(cmd_name, args_strings):
+def call_command(cmd_name: str | os.PathLike, args_strings: list[str]) -> int:
     """Call CLI command with arguments and returns its return value.
 
     Parameters
@@ -89,20 +31,26 @@ def call_command(cmd_name, args_strings):
     return_value
         Command return value.
     """
-    if not os.path.isabs(cmd_name):
-        cmd_fullpath = which(cmd_name)
+    cmd_path = Path(cmd_name)
+    cmd_fullpath: str | os.PathLike | None = None
+    if not cmd_path.is_absolute():
+        cmd_fullpath = shutil.which(cmd_name)
     else:
         cmd_fullpath = cmd_name
 
+    if cmd_fullpath is None:
+        raise FileNotFoundError(f"Command {cmd_name} not found in PATH.")
+
     try:
-        cmd_line = [cmd_fullpath] + args_strings
-        log.debug('Calling: `{}`.'.format(' '.join(cmd_line)))
-        # retval = subprocess.check_call(cmd_line)
-        retval = subprocess.call(' '.join(cmd_line), shell=True)
-    except CalledProcessError as ce:
+        cmd_line = [str(cmd_fullpath), *args_strings]
+        shell_command = " ".join(cmd_line)
+        log.debug("Calling: `%s`.", shell_command)
+        retval = subprocess.call(shell_command, shell=True)  # noqa: S602
+    except CalledProcessError as error:
         log.exception(
-            "Error calling command with arguments: "
-            "{} \n With return code: {}".format(cmd_line, ce.returncode)
+            "Error calling command with arguments: " "%s \n With return code: %s",
+            cmd_line,
+            error.returncode,
         )
         raise
     else:
