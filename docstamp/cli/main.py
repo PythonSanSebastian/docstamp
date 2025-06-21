@@ -112,8 +112,7 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
     verbose,
     unicode_support,
 ):
-    """Use docstamp to create documents from the content of a CSV file or
-    a Google Spreadsheet.
+    """Use docstamp to create documents from the content of a CSV file.
 
     Examples: \n
     docstamp create -i badge.csv -t badge_template.svg -o badges
@@ -178,7 +177,7 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
         item = items[idx]
 
         if not fields:
-            file_name = str(idx).zfill(n_zeros)
+            file_suffix = str(idx).zfill(n_zeros)
         else:
             field_values = []
             try:
@@ -188,9 +187,9 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
                 log.exception("Could not get field %s value from %s.", field_name, item)
                 sys.exit(-1)
             else:
-                file_name = "_".join(field_values)
+                file_suffix = "_".join(field_values)
 
-        log.debug("Filling template %s with values of item %s.", file_name, idx)
+        log.debug("Filling template %s with values of item %s.", file_suffix, idx)
         try:
             template_doc.render(item)
         except Exception as error:
@@ -204,7 +203,7 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
         else:
             basename = prefix
 
-        file_path = output_directory / f"{basename + "_" + file_name}.{otype}"
+        file_path = output_directory / f"{basename}_{file_suffix}.{otype}"
         log.debug("Rendering file %s.", file_path)
         try:
             template_doc.export(
