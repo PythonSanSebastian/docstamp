@@ -15,13 +15,16 @@ if TYPE_CHECKING:
     from typing import Literal
 
 
-FONT_TYPES = {"ttf": "truetype", "otf": "opentype"}
+FONT_TYPES: dict[str, Literal["truetype", "opentype"]] = {
+    "ttf": "truetype",
+    "otf": "opentype",
+}
 
 
 def get_base64_encoding(bin_filepath: os.PathLike | str) -> bytes:
     """Return the base64 encoding of the given binary file"""
     _bin_filepath = Path(bin_filepath)
-    return base64.b64encode(_bin_filepath.open().read())
+    return base64.b64encode(_bin_filepath.open(mode="rb").read())
 
 
 def remove_ext(filepath: os.PathLike | str) -> str:
@@ -83,9 +86,15 @@ class FontFace:
     def fonttype(self) -> Literal["truetype", "opentype"]:
         """Return the font type based on the file extension."""
         if self.ftype is None:
-            return FONT_TYPES[get_extension(filepath=self.filepath)]
+            file_extension = get_extension(filepath=self.filepath)
+            if file_extension not in FONT_TYPES:
+                raise ValueError(
+                    f"Unsupported font type for file {self.filepath}. "
+                    "Supported types are: " + ", ".join(FONT_TYPES.keys())
+                )
+            return FONT_TYPES[file_extension]
         else:
-            return self.ftype
+            return FONT_TYPES[self.ftype]
 
     @property
     def ext(self) -> str:
@@ -95,11 +104,12 @@ class FontFace:
     @property
     def css_text(self) -> str:
         """Return the CSS text for embedding the font."""
-        css_text = "@font-face{\n"
-        css_text += "font-family: " + self.name + ";\n"
-        css_text += "src: url(data:font/" + self.ext + ";"
-        css_text += "base64," + self.base64 + ") "
-        css_text += "format('" + self.fonttype + "');\n}\n"
+        css_text = "@font-face"
+        css_text += "{\n"
+        css_text += f"font-family: {self.name};\n"
+        css_text += f"src: url(data:font/{self.ext};base64,{self.base64!r}) "
+        css_text += f"format('{self.fonttype}');\n"
+        css_text += "}\n"
         return css_text
 
 

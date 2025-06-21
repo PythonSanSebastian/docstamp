@@ -20,8 +20,8 @@ if TYPE_CHECKING:
 
 
 def get_doctype_by_extension(
-    extension: Literal["txt", "svg", "tex"],
-) -> type[TextDocument]:
+    extension: Literal["txt", "svg", "tex"] | str,
+) -> type[TextDocument] | None:
     if "txt" in extension:
         doc_type = TextDocument
     elif "svg" in extension:
@@ -29,15 +29,13 @@ def get_doctype_by_extension(
     elif "tex" in extension:
         doc_type = LateXDocument
     else:
-        raise ValueError(
-            f"Could not determine the document type for `extension` {extension}."
-        )
+        doc_type = None
     return doc_type
 
 
 def get_doctype_by_command(
     command: Literal["inkscape", "pdflatex", "xelatex"] | None,
-) -> type[TextDocument]:
+) -> type[TextDocument] | None:
     if not command:
         doc_type = TextDocument
     elif command == "inkscape":
@@ -47,9 +45,7 @@ def get_doctype_by_command(
     elif command == "xelatex":
         doc_type = XeLateXDocument
     else:
-        raise ValueError(
-            f"Could not determine the document type for `command` {command}."
-        )
+        doc_type = None  # type: ignore[unreachable]
 
     return doc_type
 
@@ -78,7 +74,7 @@ class TextDocument:
             loader=FileSystemLoader(self._template_file.parent),
             autoescape=False,  # noqa: S701
         )
-        self.template = self._template_env.get_template(template_file_path.name)
+        self.template = self._template_env.get_template(self._template_file.name)
 
     def render(self, doc_contents: dict[str, Any] | None = None) -> str:
         """Render the content of the document with the information in doc_contents.
@@ -129,7 +125,11 @@ class TextDocument:
             raise ExportError(f"Error exporting document to {file_path}.") from error
 
     @classmethod
-    def from_template_file(cls, template_file_path: Path, command=None):
+    def from_template_file(
+        cls,
+        template_file_path: Path,
+        command: Literal["inkscape", "pdflatex", "xelatex"] | None = None,
+    ) -> TextDocument:
         """Factory function to create a specific document of the
         class given by the `command` or the extension of `template_file_path`.
 
@@ -149,20 +149,23 @@ class TextDocument:
         # get template file extension
         ext = template_file_path.suffix.lower().removeprefix(".")
 
-        try:
-            doc_type = get_doctype_by_command(command)
-        except ValueError:
+        doc_type = get_doctype_by_command(command)
+        if doc_type is None:
             doc_type = get_doctype_by_extension(ext)
-        except:
-            raise
-        else:
-            return doc_type(template_file_path)
+
+        if doc_type is None:
+            raise ValueError(
+                f"Unsupported document type for file {template_file_path}. "
+                "Supported types are: txt, svg, tex."
+            )
+
+        return doc_type(template_file_path)
 
 
 class SVGDocument(TextDocument):
     """A .svg template document model. See TextDocument."""
 
-    def render(self, doc_contents: dict[str, Any]) -> str:
+    def render(self, doc_contents: dict[str, Any] | None = None) -> str:
         """Render the content of the document with the information in doc_contents.
         This is different from the TextDocument fill function, because this will
         check for symbools in the values of `doc_content` and replace them
@@ -178,6 +181,9 @@ class SVGDocument(TextDocument):
         filled_doc: str
             The content of the document with the template information filled.
         """
+        if doc_contents is None:
+            doc_contents = {}
+
         for key, content in doc_contents.items():
             doc_contents[key] = replace_chars_for_svg_code(content)
 
@@ -282,19 +288,19 @@ class LateXDocument(TextDocument):
         rendered_content = self.render(doc_contents=doc_contents)
         _file_path = Path(file_path)
         try:
-            file_path.write_text(
+            _file_path.write_text(
                 rendered_content,
                 encoding=kwargs.get("encoding", "utf-8"),
             )
         except Exception as error:
             raise ExportError(
-                f"Error exporting TeX document to {file_path}."
+                f"Error exporting TeX document to {_file_path}."
             ) from error
 
         try:
-            self._export(temp.name, file_path, output_format="pdf")
+            self._export(temp.name, _file_path, output_format="pdf")
         except Exception as error:
-            raise ExportError(f"Error exporting file {file_path} to PDF.") from error
+            raise ExportError(f"Error exporting file {_file_path} to PDF.") from error
 
 
 class PDFLateXDocument(LateXDocument):

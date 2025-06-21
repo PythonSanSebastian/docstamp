@@ -44,14 +44,14 @@ def remove_ext(filepath: os.PathLike | str) -> str:
     """
     extension = get_extension(filepath)
     if not extension:
-        return filepath
-    return filepath.removesuffix(extension)
+        return str(filepath)
+    return str(filepath).removesuffix(extension)
 
 
 def get_tempfile(
     suffix: str = ".txt",
     dirpath: os.PathLike | str | None = None,
-) -> tempfile.NamedTemporaryFile:
+) -> tempfile._TemporaryFileWrapper[bytes]:
     """Return a temporary file with the given suffix within dirpath.
     If dirpath is None, will look for a temporary folder in your system.
 
@@ -71,7 +71,7 @@ def get_tempfile(
     if dirpath is None:
         dirpath = get_temp_dir()
 
-    return tempfile.NamedTemporaryFile(suffix=suffix, dir=dirpath)
+    return tempfile.NamedTemporaryFile(suffix=suffix, dir=str(dirpath))
 
 
 def cleanup(workdir: os.PathLike | str, extension: str):
@@ -114,5 +114,5 @@ def replace_file_content(filepath: os.PathLike | str, old: str, new: str, max: i
     """
     _filepath = Path(filepath)
     content = _filepath.read_text()
-    content = content.replace(old=old, new=new, count=max)
+    content = content.replace(old, new, max)
     _filepath.write_text(content)

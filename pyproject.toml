@@ -67,7 +67,7 @@ __version__ = "{version}"
 '''
 
 [project.scripts]
-docstamp = "docstamp.cli.cli:cli"
+docstamp = "docstamp.cli.main:cli"
 
 [tool.uv]
 default-groups = "all"

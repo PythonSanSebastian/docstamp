@@ -35,7 +35,7 @@ def merge_pdfs(
         merger.append(PdfFileReader(pdf_filepath.open("rb")))
 
     merger.write(str(out_filepath))
-    return out_filepath
+    return Path(out_filepath)
 
 
 def pdf_to_cmyk(input_file: os.PathLike | str, output_file: os.PathLike | str) -> int:

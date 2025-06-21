@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import logging
 import math
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import click
 
@@ -14,9 +13,7 @@ from docstamp.cli.utils import (
     DirPath,
     ExistingFilePath,
     get_items_from_csv,
-    verbose_switch,
 )
-from docstamp.config import LOGGING_LVL
 from docstamp.file_utils import get_extension
 from docstamp.template import TextDocument
 
@@ -122,7 +119,7 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
     docstamp create -i badge.csv -t badge_template.svg -o badges
     docstamp create -i badge.csv -t badge_template.svg -o ./badges -d pdf
     """
-    logging.basicConfig(level=LOGGING_LVL)
+    logging.basicConfig(level="INFO")
     log = logging.getLogger(__name__)
 
     # setup verbose mode
@@ -188,7 +185,7 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
                 for field_name in fields:
                     field_values.append(item[field_name].replace(" ", ""))
             except KeyError as _:
-                log.exception("Could not get field %s value from %s", field_name, item)
+                log.exception("Could not get field %s value from %s.", field_name, item)
                 sys.exit(-1)
             else:
                 file_name = "_".join(field_values)
@@ -196,8 +193,8 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
         log.debug("Filling template %s with values of item %s.", file_name, idx)
         try:
             template_doc.render(item)
-        except:
-            log.exception("Error filling document for %sth item", idx)
+        except Exception as error:
+            log.exception("Error filling document for %sth item: %s.", idx, error)
             continue
 
         # set output file path
@@ -216,8 +213,8 @@ def create(  # noqa: C901, PLR0912, PLR0913, PLR0915
                 dpi=dpi,
                 support_unicode=unicode_support,
             )
-        except:
-            log.exception("Error creating %s for %s.", file_path, item)
+        except Exception as error:
+            log.exception("Error creating %s for %s: %s.", file_path, item, error)
             sys.exit(-1)
         else:
             log.debug("Successfully rendered %s.", file_path)

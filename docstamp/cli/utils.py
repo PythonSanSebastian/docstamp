@@ -13,6 +13,7 @@ import click
 import orjson
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
 
 # different context options
@@ -31,7 +32,8 @@ class RegularExpression(click.ParamType):
 
     name = "regex"
 
-    def convert(self, value: str, param: str, ctx: click.Context | None) -> re.Pattern:
+    def convert(self, value: str, param: str, ctx: click.Context | None) -> re.Pattern:  # type: ignore[return]
+        """Convert the value to a compiled regular expression pattern."""
         try:
             return re.compile(value, re.IGNORECASE)
         except ValueError:
@@ -40,7 +42,7 @@ class RegularExpression(click.ParamType):
 
 def get_items_from_csv(
     csv_filepath: os.PathLike | str,
-) -> tuple[dict[int, Any], list[str] | None]:
+) -> tuple[dict[int, Any], Sequence[str] | None]:
     """
     Read a CSV file and return its contents as a dictionary of enumerated items
     and a list of the header column names.

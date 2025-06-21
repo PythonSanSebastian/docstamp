@@ -9,7 +9,7 @@ from pathlib import Path
 import svgutils
 import svgutils.transform as sg
 
-from docstamp.commands import call_command, check_command
+from docstamp.commands import call_command
 
 
 def replace_chars_for_svg_code(svg_content: str) -> str:
@@ -114,26 +114,35 @@ def merge_svg_files(
 
 def rsvg_export(
     input_file: os.PathLike | str,
-    output_file: str | Path,
+    output_file: os.PathLike | str,
     dpi: int = 90,
-    rsvg_binpath: str | None = None,
+    rsvg_binpath: os.PathLike | str | None = None,
 ):
     """Calls the `rsvg-convert` command, to convert a svg to a PDF (with unicode).
 
     Parameters
     ----------
 
-    input_file: str
+    input_file: os.PathLike | str
         Path to the input file
 
-    output_file: str
+    output_file: os.PathLike | str
         Path to the output file
 
     dpi: int
         Dots per inch for the output file. Default is 90.
 
-    rsvg_binpath: str
-        Path to `rsvg-convert` command
+    rsvg_binpath: os.PathLike | str | None
+        Path to `rsvg-convert` command binary.
+        If None, it will try to find the binary in your computer.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input file does not exist or if the `rsvg-convert` command is not found.
+
+    CalledProcessError
+        If the `rsvg-convert` command fails to execute properly.
 
     Returns
     -------
@@ -145,15 +154,17 @@ def rsvg_export(
         raise FileNotFoundError(f"File {input_file} not found.")
 
     if rsvg_binpath is None:
-        rsvg_binpath = shutil.which(cmd_name="rsvg-convert")
-        check_command(cmd_name=rsvg_binpath)
+        cmd_name = "rsvg-convert"
+        rsvg_binpath = shutil.which(cmd="rsvg-convert")
+        if rsvg_binpath is None:
+            raise FileNotFoundError(f"Could not find command named {cmd_name}.")
 
     args_strings = [
         "-f pdf",
         f"-o {output_file}",
         f"--dpi-x {dpi}",
         f"--dpi-y {dpi}",
-        input_file,
+        str(input_file),
     ]
 
     return call_command(cmd_name=rsvg_binpath, args_strings=args_strings)

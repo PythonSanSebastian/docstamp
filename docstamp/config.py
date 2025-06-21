@@ -35,6 +35,7 @@ def find_file_match(folder_path: Path, regex: str = ".*") -> list[Path]:
 
 
 def get_other_program_folders() -> list[Path]:
+    """Return a list of common program folders based on the platform."""
     if _platform == "linux" or _platform == "linux2":
         return [
             Path("/opt/bin"),
@@ -48,23 +49,32 @@ def get_other_program_folders() -> list[Path]:
         return [Path("/Applications"), Path(os.environ["HOME"]) / "Applications"]
     elif _platform == "win32":
         # don't know if this works
-        return Path(r"C:\Program Files")
+        return [Path(r"C:\Program Files")]
+    else:
+        raise NotImplementedError(
+            f"Platform {_platform} is not supported for finding other program folders."
+        )
 
 
-def get_temp_dir():
+def get_temp_dir() -> Path | None:
+    """Return the temporary directory based on the platform."""
     if _platform == "linux" or _platform == "linux2":
-        return "/tmp"
+        return Path("/tmp")
     elif _platform == "darwin":
-        return "."
+        return Path.cwd()
     elif _platform == "win32":
         # don't know if this works
         return None
+    else:
+        raise NotImplementedError(
+            f"Platform {_platform} is not supported for getting the temporary directory."
+        )
 
 
 def find_in_other_programs_folders(app_name: str) -> Path | None:
-    app_name_regex = "^" + app_name + "$"
+    """Search for the application binary in common program folders."""
+    app_name_regex = f"^{app_name}$"
     other_folders = get_other_program_folders()
-
     for folder in other_folders:
         abin_file = find_program(folder, app_name_regex)
         if abin_file is not None:
@@ -87,52 +97,19 @@ def is_executable(filepath: str | Path) -> bool:
     filepath = Path(filepath)
     if not filepath.exists():
         return False
-    if _platform == "win32":
+    if _platform in ("linux", "linux2", "darwin"):
+        return filepath.is_file() and os.access(filepath, os.X_OK)
+    elif _platform == "win32":
         return filepath.suffix.lower() in (".exe", ".bat", ".cmd")
     else:
-        return filepath.is_file() and os.access(filepath, os.X_OK)
-
-
-def ask_for_path_of(app_name: str) -> Path | None:
-    """Ask the user for the path of the application binary.
-    This function will repeatedly prompt the user until a valid executable
-    file is provided.
-    Parameters
-    ----------
-    app_name: str
-        The name of the application to find.
-    Returns
-    -------
-    str
-        The path to the binary file.
-    Raises
-    ------
-    ValueError
-        If the provided path does not exist or is not executable.
-    """
-    bin_path = None
-    while bin_path is not None:
-        bin_path = input(
-            f"Insert path of {app_name} executable file [Press Ctrl+C to exit]: "
+        raise NotImplementedError(
+            f"Platform {_platform} is not supported for checking executable files."
         )
 
-        if not Path(bin_path).exists():
-            print(f"Could not find file {bin_path}. Try it again.")
-            bin_path = None
-            continue
 
-        if not is_executable(bin_path):
-            print(f"No execution permissions on file {bin_path}. Try again.")
-            bin_path = None
-            continue
-
-        return Path(bin_path) if bin_path else None
-
-
-def proactive_search_of(app_name: str) -> Path | None:
-    """Proactively search for the binary of the given application.
-    This function checks the system PATH, common program folders, and prompts
-    the user for the path if the binary is not found.
+def get_executable_path(app_name: str) -> Path | None:
+    """Search for the binary of the given application.
+    This function checks the system PATH, common program folders.
     Parameters
     ----------
     app_name: str
@@ -155,7 +132,10 @@ def proactive_search_of(app_name: str) -> Path | None:
     if search_result is not None:
         return search_result
 
-    return ask_for_path_of(bin_name)
+    raise FileNotFoundError(
+        f"Could not find {app_name} binary in the system PATH or common program folders. "
+        "Please provide the path manually."
+    )
 
 
 def get_inkscape_binpath() -> Path | None:
@@ -163,17 +143,10 @@ def get_inkscape_binpath() -> Path | None:
     bin_name = "inkscape"
     if _platform == "darwin":
         bin_name = "inkscape-bin"
-
-    if "INKSCAPE_BINPATH" not in globals():
-        global INKSCAPE_BINPATH
-        INKSCAPE_BINPATH = proactive_search_of(bin_name)
-
-    return INKSCAPE_BINPATH
+    return get_executable_path(bin_name)
 
 
 def get_lyx_binpath() -> Path | None:
     """Return the LyX binary path."""
-    if "LYX_BINPATH" not in globals():
-        global LYX_BINPATH
-        LYX_BINPATH = proactive_search_of("lyx")
-    return LYX_BINPATH
+    bin_name = "lyx"
+    return get_executable_path(bin_name)

@@ -27,12 +27,10 @@ def call_inkscape(
     return_value
         Inkscape command CLI call return value.
     """
-    log.debug("Looking for the binary file for inkscape.")
-
     if inkscape_binpath is None:
         inkscape_binpath = get_inkscape_binpath()
 
-    if inkscape_binpath is None or not Path.exists(inkscape_binpath):
+    if inkscape_binpath is None or not Path(inkscape_binpath).exists():
         raise FileNotFoundError(
             "Inkscape binary has not been found. Please check configuration."
         )
@@ -75,20 +73,21 @@ def inkscape_export(
         Command call return value
 
     """
-    if not Path.exists(input_file):
+    if not Path(input_file).exists():
         raise FileNotFoundError(f"File {input_file} not found.")
 
     if "=" not in export_flag:
         export_flag += " "
 
-    arg_strings = []
-    arg_strings += ["--without-gui"]
-    arg_strings += ["--export-text-to-path"]
-    arg_strings += ["--export-pdf-version=1.5"]
-    arg_strings += [f'{export_flag}"{output_file}"']
-    arg_strings += [f"--export-dpi={dpi}"]
-    arg_strings += [f'"{input_file}"']
-    return call_inkscape(arg_strings=arg_strings, inkscape_binpath=inkscape_binpath)
+    args = [
+        "--without-gui",
+        "--export-text-to-path",
+        "--export-pdf-version=1.5",
+        f'{export_flag}"{output_file}"',
+        f"--export-dpi={dpi}",
+        f'"{input_file}"',
+    ]
+    return call_inkscape(args_strings=args, inkscape_binpath=inkscape_binpath)
 
 
 def svg2pdf(
@@ -125,7 +124,7 @@ def svg2png(
 ) -> int:
     """Transform SVG file to PNG file"""
     return inkscape_export(
-        intput_file=svg_file_path,
+        input_file=svg_file_path,
         output_file=png_file_path,
         export_flag="-e",
         dpi=dpi,
